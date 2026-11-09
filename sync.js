@@ -4,7 +4,7 @@
    Turned on by config.js — without it the app stays local-only exactly as before. */
 window.cloud = (() => {
   const CFG = window.INS_CLOUD || {};
-  if (!CFG.url || !CFG.key || !window.supabase) return null;
+  if (!CFG.url || !CFG.key || !window.supabase || new URLSearchParams(location.search).has('demo')) return null; // presentation link stays offline
   const ARR = { job: 'jobs', task: 'tasks', worker: 'workers', user: 'users', film: 'films' };
   const SYNC_KEY = 'ins_synced_v1';
   const sb = window.supabase.createClient(CFG.url, CFG.key, { auth: { persistSession: true, autoRefreshToken: true, storageKey: 'ins_sb_auth' } });
