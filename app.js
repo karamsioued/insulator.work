@@ -163,7 +163,7 @@ const T = {
     closeConfirm: 'بعض المهام لم تنتهِ بعد. إغلاق السيارة على أي حال؟', deleteConfirm: 'حذف نهائي لهذه السيارة وكل مهامها؟',
     status: 'الحالة', open: 'قيد العمل', closed: 'مغلقة', editTask: 'تعديل المهمة', service: 'الخدمة', part: 'القطعة',
     startTime: 'وقت البدء', endTime: 'وقت الانتهاء', rework: 'إعادة عمل (خطأ وتمت إعادته)', delete: 'حذف', save: 'حفظ', cancel: 'إلغاء',
-    edited: 'معدّل', demoMode: 'وضع العرض — بيانات تجريبية للشرح فقط، منفصلة تماماً عن بيانات الورشة', demoReset: 'إعادة البيانات', breakStart: 'بداية الاستراحة (إيقاف تلقائي)', breakEnd: 'رجوع للعمل (تذكير)', breakWarn: 'تنبيه قبل الاستراحة (دقائق)', breakSoon: '⏰ باقي {0} دقائق على الاستراحة — {1} مهمة جارية ستتوقف تلقائياً', breakPaused: '⏸ وقت الاستراحة: تم إيقاف {0} مهمة تلقائياً. استأنفوا الساعة {1}', breakOver: '▶ انتهت الاستراحة — {0} مهمة متوقفة بانتظار الاستئناف', halfPart: 'نصف', polWhat: 'نوع البوليش', polExt: 'خارجي', polInt: 'داخلي', polBoth: 'داخلي وخارجي', jamSpec: 'نوع الفيلم', newColor: 'اللون الجديد', pinTaken: 'هذا الرمز مستخدم لحساب آخر — اختر رمزاً مختلفاً', team: 'الفريق', progress: 'تطوّر الأداء مع الوقت', weekVs: 'أسبوع بأسبوع', monthVs: 'شهر بشهر', ptsDay: 'نقاط/يوم', change: 'التغيّر', trend6: 'آخر 6 فترات', soFar: 'حتى الآن', prevShort: 'السابق', curShort: 'الحالي', new: 'جديد', teamRate: 'متوسط الفريق', progressHint: 'نقارن معدل الإنتاج اليومي (نقاط صعوبة القطع ÷ أيام العمل) حتى تكون المقارنة عادلة حتى لو الفترة الحالية لم تنتهِ بعد. الخط الأصفر يوضح اتجاه العامل في آخر 6 فترات.', lowRank: 'الأضعف', noWorkP: 'لا عمل في هذه الفترة', manualT: 'وقت يدوي', editedT: 'وقت معدّل', addTime: 'إضافة وقت', timeSec: 'الوقت', timeHint: 'إذا نسيت تسجيل الوقت أو كنت مشغولاً، أدخله هنا تقريبياً.', pauseMin: 'وقت التوقف (دقيقة)', netDur: 'مدة العمل', editLog: 'سجل تعديل الوقت', was: 'كان', none: 'لا شيء', manualNote: '{0} مهام وقتها أُدخل أو عُدّل يدوياً في هذه الفترة', photoErr: 'لم نستطع قراءة الصورة — اختر صورة JPG أو PNG (صور HEIC من الآيفون لا تُقرأ في متصفح الكمبيوتر)', pauseTooLong: 'وقت التوقف أطول من مدة العمل', noStartEnd: 'أدخل وقت البدء أولاً', alreadyRunning: '{0} يعمل الآن على مهمة أخرى — ابدأ على أي حال؟', started: 'بدأ العمل', finished: 'انتهت المهمة',
+    edited: 'معدّل', demoMode: 'وضع العرض — بيانات تجريبية للشرح فقط، منفصلة تماماً عن بيانات الورشة', demoReset: 'إعادة البيانات', breakStart: 'بداية الاستراحة (إيقاف تلقائي)', breakEnd: 'رجوع للعمل (تذكير)', breakWarn: 'تنبيه قبل الاستراحة (دقائق)', breakSoon: '⏰ باقي {0} دقائق على الاستراحة — {1} مهمة جارية ستتوقف تلقائياً', breakPaused: '⏸ وقت الاستراحة: تم إيقاف {0} مهمة تلقائياً. استأنفوا الساعة {1}', breakOver: '▶ انتهت الاستراحة — {0} مهمة متوقفة بانتظار الاستئناف', halfPart: 'نصف', wDone: 'أنهى شغله', waitingW: 'ينتظر', carMap: 'خريطة السيارة', carMapHint: 'اضغط على أي جزء لترى من يعمل عليه', partDoneAll: 'إنهاء الجزء لكل العمال', partStartAll: 'ابدأ للكل', partPauseAll: 'إيقاف مؤقت للكل', partResumeAll: 'استئناف للكل', partFinishQ: 'إنهاء «{0}» وإيقاف عداد {1} عامل؟', partEmpty: 'هذا الجزء ليس ضمن شغل هذه السيارة', sWait: 'لم يبدأ', sRun: 'جاري', sPause: 'متوقف', sDone: 'منتهي', otherParts: 'أجزاء أخرى', polWhat: 'نوع البوليش', polExt: 'خارجي', polInt: 'داخلي', polBoth: 'داخلي وخارجي', jamSpec: 'نوع الفيلم', newColor: 'اللون الجديد', pinTaken: 'هذا الرمز مستخدم لحساب آخر — اختر رمزاً مختلفاً', team: 'الفريق', progress: 'تطوّر الأداء مع الوقت', weekVs: 'أسبوع بأسبوع', monthVs: 'شهر بشهر', ptsDay: 'نقاط/يوم', change: 'التغيّر', trend6: 'آخر 6 فترات', soFar: 'حتى الآن', prevShort: 'السابق', curShort: 'الحالي', new: 'جديد', teamRate: 'متوسط الفريق', progressHint: 'نقارن معدل الإنتاج اليومي (نقاط صعوبة القطع ÷ أيام العمل) حتى تكون المقارنة عادلة حتى لو الفترة الحالية لم تنتهِ بعد. الخط الأصفر يوضح اتجاه العامل في آخر 6 فترات.', lowRank: 'الأضعف', noWorkP: 'لا عمل في هذه الفترة', manualT: 'وقت يدوي', editedT: 'وقت معدّل', addTime: 'إضافة وقت', timeSec: 'الوقت', timeHint: 'إذا نسيت تسجيل الوقت أو كنت مشغولاً، أدخله هنا تقريبياً.', pauseMin: 'وقت التوقف (دقيقة)', netDur: 'مدة العمل', editLog: 'سجل تعديل الوقت', was: 'كان', none: 'لا شيء', manualNote: '{0} مهام وقتها أُدخل أو عُدّل يدوياً في هذه الفترة', photoErr: 'لم نستطع قراءة الصورة — اختر صورة JPG أو PNG (صور HEIC من الآيفون لا تُقرأ في متصفح الكمبيوتر)', pauseTooLong: 'وقت التوقف أطول من مدة العمل', noStartEnd: 'أدخل وقت البدء أولاً', alreadyRunning: '{0} يعمل الآن على مهمة أخرى — ابدأ على أي حال؟', started: 'بدأ العمل', finished: 'انتهت المهمة',
     noTasksW: 'لا توجد مهام معيّنة لهذا العامل', week: 'أسبوع', month: 'شهر', thisWeek: 'هذا الأسبوع',
     kCars: 'السيارات', kTasks: 'القطع المنجزة', kHours: 'ساعات العمل', kAvgCar: 'متوسط العمل للسيارة', kTurn: 'متوسط مدة التسليم', kRework: 'نسبة إعادة العمل',
     ranking: 'ترتيب الإنتاجية', score: 'التقييم', cars: 'سيارات', hours: 'ساعات', eff: 'الكفاءة', util: 'الاستغلال', avgCar: 'متوسط/سيارة',
@@ -206,7 +206,7 @@ const T = {
     closeConfirm: 'Some tasks are not finished. Close the car anyway?', deleteConfirm: 'Permanently delete this car and all its tasks?',
     status: 'Status', open: 'In progress', closed: 'Closed', editTask: 'Edit task', service: 'Service', part: 'Panel',
     startTime: 'Start time', endTime: 'End time', rework: 'Rework (mistake, redone)', delete: 'Delete', save: 'Save', cancel: 'Cancel',
-    edited: 'edited', demoMode: 'Presentation mode — sample data only, completely separate from the workshop data', demoReset: 'Reset data', breakStart: 'Break starts (auto-pause)', breakEnd: 'Back to work (reminder)', breakWarn: 'Warn before break (minutes)', breakSoon: '⏰ {0} minutes to the break — {1} running tasks will pause automatically', breakPaused: '⏸ Break time: {0} tasks paused automatically. Resume at {1}', breakOver: '▶ Break is over — {0} paused tasks waiting to resume', halfPart: 'half', polWhat: 'Polish type', polExt: 'Exterior', polInt: 'Interior', polBoth: 'Interior + exterior', jamSpec: 'Film type', newColor: 'New colour', pinTaken: 'This code is used by another account — pick a different one', team: 'Team', progress: 'Progress over time', weekVs: 'Week vs week', monthVs: 'Month vs month', ptsDay: 'Pts/day', change: 'Change', trend6: 'Last 6 periods', soFar: 'so far', prevShort: 'prev', curShort: 'now', new: 'new', teamRate: 'Team average', progressHint: 'We compare the daily production rate (panel difficulty points ÷ working days) so it stays fair even while the current period is still running. The yellow line shows each worker\'s direction over the last 6 periods.', lowRank: 'lowest', noWorkP: 'no work this period', manualT: 'manual time', editedT: 'time edited', addTime: 'Add time', timeSec: 'Time', timeHint: 'Forgot to log it or were busy? Enter an approximate time here.', pauseMin: 'Paused (minutes)', netDur: 'Work time', editLog: 'Time edit history', was: 'was', none: 'none', manualNote: '{0} tasks had their time entered or edited by hand in this period', photoErr: 'Could not read the photo — pick a JPG or PNG (iPhone HEIC photos do not open in desktop browsers)', pauseTooLong: 'Paused time is longer than the work span', noStartEnd: 'Enter the start time first', alreadyRunning: '{0} is already working on another task — start anyway?', started: 'Started', finished: 'Task finished',
+    edited: 'edited', demoMode: 'Presentation mode — sample data only, completely separate from the workshop data', demoReset: 'Reset data', breakStart: 'Break starts (auto-pause)', breakEnd: 'Back to work (reminder)', breakWarn: 'Warn before break (minutes)', breakSoon: '⏰ {0} minutes to the break — {1} running tasks will pause automatically', breakPaused: '⏸ Break time: {0} tasks paused automatically. Resume at {1}', breakOver: '▶ Break is over — {0} paused tasks waiting to resume', halfPart: 'half', wDone: 'Work done', waitingW: 'Waiting', carMap: 'Car map', carMapHint: 'Tap any part to see who is working on it', partDoneAll: 'Finish part for everyone', partStartAll: 'Start all', partPauseAll: 'Pause all', partResumeAll: 'Resume all', partFinishQ: 'Finish “{0}” and stop the timer of {1} worker(s)?', partEmpty: 'This part is not in this car\'s work', sWait: 'Not started', sRun: 'Running', sPause: 'Paused', sDone: 'Done', otherParts: 'Other parts', polWhat: 'Polish type', polExt: 'Exterior', polInt: 'Interior', polBoth: 'Interior + exterior', jamSpec: 'Film type', newColor: 'New colour', pinTaken: 'This code is used by another account — pick a different one', team: 'Team', progress: 'Progress over time', weekVs: 'Week vs week', monthVs: 'Month vs month', ptsDay: 'Pts/day', change: 'Change', trend6: 'Last 6 periods', soFar: 'so far', prevShort: 'prev', curShort: 'now', new: 'new', teamRate: 'Team average', progressHint: 'We compare the daily production rate (panel difficulty points ÷ working days) so it stays fair even while the current period is still running. The yellow line shows each worker\'s direction over the last 6 periods.', lowRank: 'lowest', noWorkP: 'no work this period', manualT: 'manual time', editedT: 'time edited', addTime: 'Add time', timeSec: 'Time', timeHint: 'Forgot to log it or were busy? Enter an approximate time here.', pauseMin: 'Paused (minutes)', netDur: 'Work time', editLog: 'Time edit history', was: 'was', none: 'none', manualNote: '{0} tasks had their time entered or edited by hand in this period', photoErr: 'Could not read the photo — pick a JPG or PNG (iPhone HEIC photos do not open in desktop browsers)', pauseTooLong: 'Paused time is longer than the work span', noStartEnd: 'Enter the start time first', alreadyRunning: '{0} is already working on another task — start anyway?', started: 'Started', finished: 'Task finished',
     noTasksW: 'No tasks assigned to this worker', week: 'Week', month: 'Month', thisWeek: 'This week',
     kCars: 'Cars', kTasks: 'Panels done', kHours: 'Labor hours', kAvgCar: 'Avg labor / car', kTurn: 'Avg turnaround', kRework: 'Rework rate',
     ranking: 'Productivity ranking', score: 'Score', cars: 'Cars', hours: 'Hours', eff: 'Efficiency', util: 'Utilization', avgCar: 'Avg/car',
@@ -490,11 +490,14 @@ function render() {
   if (!ACCESS[r.name].includes(u.role)) { location.replace('#/' + homeOf()); r = { name: homeOf() }; }
   const views = { floor: viewFloor, new: viewNew, job: viewJob, dashboard: viewDashboard, worker: viewWorker, history: viewHistory, settings: viewSettings };
   const v = views[r.name](r);
+  const key = location.hash, same = key === lastRoute, y = window.scrollY;
   root().innerHTML = shell(r, v);
   if (r.name === 'new') renderAssign();
   tick();
-  window.scrollTo({ top: 0 });
+  lastRoute = key;
+  window.scrollTo({ top: same ? y : 0 }); // stay in place when only the data changed (pause, sync…)
 }
+let lastRoute = null;
 function shell(r, v) {
   const u = me(), items = NAV.filter(n => n.roles.includes(u.role)), active = r.name === 'job' ? (u.role === 'supervisor' ? 'floor' : 'history') : r.name === 'worker' ? 'dashboard' : r.name;
   const navLinks = cls => items.map(n => `<a class="${cls} ${active === n.k ? 'on' : ''}" href="#/${n.k}">${ic(n.icon)}<span>${t(n.k)}</span></a>`).join('');
@@ -562,13 +565,15 @@ function viewFloor() {
   const shiftBtns = canEdit() ? `${busy.length ? `<button class="btn sm amber" data-act="pause-all">${ic('pause')}${t('pauseAll')}</button>` : ''}${nPaused ? `<button class="btn sm g" data-act="resume-all">${ic('play')}${t('resumeAll')} (${nPaused})</button>` : ''}` : '';
   const doneToday = S.tasks.filter(x => x.end && x.end >= today).length;
   const carsToday = S.jobs.filter(j => j.createdAt >= today).length;
+  const wState = w => { const run = runningOf(w.id), pz = !run && pausedOf(w.id), pend = S.tasks.filter(x => wids(x).includes(w.id) && !x.start && jobById(x.jobId)?.status === 'open').length, fin = !run && !pz && !pend && S.tasks.some(x => wids(x).includes(w.id) && x.end >= today);
+    return { run, pz, pend, fin, rank: run ? 0 : pz ? 1 : pend ? 2 : fin ? 3 : 4 }; };
   const wCard = w => {
-    const run = runningOf(w.id), pend = S.tasks.filter(x => wids(x).includes(w.id) && !x.start && jobById(x.jobId)?.status === 'open').length;
-    const pz = !run && pausedOf(w.id), rj = (run || pz) && jobById((run || pz).jobId);
-    return `<button class="w-card ${run ? 'busy' : pz ? 'paused' : ''}" data-act="worker-sheet" data-id="${w.id}">${avatar(w)}
-      <div class="info"><b>${esc(wn(w))}</b>${run || pz ? `<small>${pz ? '⏸ ' + t('paused') + ' · ' : ''}${esc(nm(PARTS[(run || pz).part]))} · ${esc(rj ? (rj.car.make + ' ' + (rj.car.plate || '')) : '')}</small>` : `<small>${t('idle')}${pend ? ' · ' + pend + ' ' + t('pending') : ''}</small>`}</div>
-      ${run ? `<span class="timer num" data-since="${since(run)}">${fClock(dur(run))}</span>` : pz ? `<span class="timer num pz">${fClock(dur(pz))}</span>` : pend ? `<span class="badge num">${pend}</span>` : ''}</button>`;
+    const { run, pz, pend, fin } = wState(w), rj = (run || pz) && jobById((run || pz).jobId);
+    return `<button class="w-card ${run ? 'busy' : pz ? 'paused' : fin ? 'fin' : ''}" data-act="worker-sheet" data-id="${w.id}">${avatar(w)}
+      <div class="info"><b>${esc(wn(w))}</b>${run || pz ? `<small>${pz ? '⏸ ' + t('paused') + ' · ' : ''}${esc(nm(PARTS[(run || pz).part]))} · ${esc(rj ? (rj.car.make + ' ' + (rj.car.plate || '')) : '')}</small>` : fin ? `<small class="fin-t">${ic('check')}${t('wDone')}</small>` : `<small>${pend ? t('waitingW') + ' · ' + pend + ' ' + t('pending') : t('idle')}</small>`}</div>
+      ${run ? `<span class="timer num" data-since="${since(run)}">${fClock(dur(run))}</span>` : pz ? `<span class="timer num pz">${fClock(dur(pz))}</span>` : pend ? `<span class="badge num">${pend}</span>` : fin ? `<span class="fin-ic">${ic('check')}</span>` : ''}</button>`;
   };
+  const ordered = list => list.map((w, i) => [w, wState(w).rank, i]).sort((a, b) => a[1] - b[1] || a[2] - b[2]).map(a => a[0]);
   const html = `${S.demo && (!sup || DEMO_MODE) ? demoBanner() : ''}
     <div class="stats-row">
       <div class="kpi hl"><small><span class="live"><span class="dot"></span></span>${t('workingNow')}</small><b class="num">${busy.length}<span>/ ${workers.length}</span></b></div>
@@ -579,7 +584,7 @@ function viewFloor() {
     <div class="sec-h">${ic('car')}${t('openJobs')}<span class="count num">${open.length}</span><span class="grow"></span>${canEdit() ? `<a class="btn sm y" href="#/new">${ic('plus')}${t('addCar')}</a>` : ''}</div>
     ${open.length ? `<div class="jobs-grid">${open.map(jobCard).join('')}</div>` : `<div class="empty">${ic('car')}<div>${t('noOpen')}</div></div>`}
     ${byTeam(workers).map(([k, list], i) => `<div class="sec-h">${ic('users')}${esc(nm(TEAMS[k]))}<span class="count num">${list.length}</span>${i === 0 ? '<span class="grow"></span>' + shiftBtns : ''}</div>
-    <div class="workers-grid">${list.map(wCard).join('')}</div>`).join('') || `<div class="empty">${t('noData')}</div>`}
+    <div class="workers-grid">${ordered(list).map(wCard).join('')}</div>`).join('') || `<div class="empty">${t('noData')}</div>`}
     ${closedToday.length ? `<div class="sec-h">${ic('check')}${t('closedToday')}<span class="count num">${closedToday.length}</span></div><div class="jobs-grid">${closedToday.map(jobCard).join('')}</div>` : ''}`;
   return { title: t('floor'), sub: fDateL(Date.now()), html };
 }
@@ -635,7 +640,7 @@ function pauseTask(x, quiet) { if (!x || !x.start || x.end || x.pausedAt) return
 function resumeTask(x, quiet) { if (!x || !x.pausedAt || x.end) return; x.paused = (x.paused || 0) + Date.now() - x.pausedAt; x.pausedAt = null; if (!quiet) { db.save(); toast(t('started')); refresh(); } }
 const endTask = x => { if (x.pausedAt) { x.end = x.pausedAt; x.pausedAt = null; } else x.end = Date.now(); };
 function finishTask(id) { const x = S.tasks.find(t => t.id === id); if (!x || !x.start || x.end) return; endTask(x); db.save(); toast(t('finished')); refresh(); }
-function refresh() { const sh = $('.sheet'); const wid = sh && sh.dataset.worker; render(); if (wid) workerSheet(wid); }
+function refresh() { const sh = $('.sheet'), wid = sh && sh.dataset.worker, part = sh && sh.dataset.part, sy = sh ? sh.scrollTop : 0; render(); if (wid) workerSheet(wid); else if (part) partSheet(sh.dataset.job, part); const n = $('.sheet'); if (n && (wid || part)) n.scrollTop = sy; }
 
 /* ---------------- new job ---------------- */
 let draft = null;
@@ -746,7 +751,8 @@ function viewJob(r) {
   const ts = tasksOf(j.id), done = ts.filter(x => x.end), pct = ts.length ? Math.round(done.length / ts.length * 100) : 0;
   const labor = done.reduce((a, x) => a + lab(x), 0);
   const groups = {}; ts.forEach(x => { const ids = wids(x); (ids.length ? ids : ['']).forEach(id => (groups[id] = groups[id] || []).push(x)); });
-  const order = Object.keys(groups).sort((a, b) => (a === '') - (b === ''));
+  const gRank = id => { const l = groups[id]; return l.some(x => x.start && !x.end && !x.pausedAt) ? 0 : l.some(x => x.start && !x.end) ? 1 : l.some(x => !x.end) ? 2 : 3; };
+  const order = Object.keys(groups).sort((a, b) => (a === '') - (b === '') || gRank(a) - gRank(b));
   const by = userById(j.createdBy);
   const html = `<section class="card job-hero">
       <div><h2>${esc(carTitle(j))}</h2>
@@ -756,19 +762,87 @@ function viewJob(r) {
         ${j.car.notes ? `<p class="muted" style="margin:12px 0 0;font-size:13.5px">${esc(j.car.notes)}</p>` : ''}</div>
       <div class="ring" style="--p:${pct}"><div><b class="num">${pct}%</b><small>${done.length}/${ts.length}</small></div></div>
     </section>
-    ${order.map(wid => { const w = workerById(wid), list = groups[wid].sort((a, b) => (a.end ? 2 : a.start ? 0 : 1) - (b.end ? 2 : b.start ? 0 : 1));
+    <div class="job-split">${carMap(j, ts)}
+    <div class="plan-list">${order.map(wid => { const w = workerById(wid), list = groups[wid].sort((a, b) => (a.end ? 2 : a.start ? 0 : 1) - (b.end ? 2 : b.start ? 0 : 1));
       const wl = list.filter(x => x.end).reduce((a, x) => a + dur(x), 0);
-      return `<div class="task-group"><div class="tg-h">${avatar(w || null, 'sm')}<b>${w ? esc(wn(w)) : t('unassigned')}</b><span class="muted num" style="font-size:13px">${list.filter(x => x.end).length}/${list.length}${wl ? ' · ' + fDur(wl) : ''}</span></div>${list.map(x => taskRow(x, false, wid || null)).join('')}</div>`; }).join('')}
+      const allDone = list.every(x => x.end);
+      return `<div class="task-group ${allDone ? 'all-done' : ''}"><div class="tg-h">${avatar(w || null, 'sm')}<b>${w ? esc(wn(w)) : t('unassigned')}</b>${allDone ? `<span class="chip g">${ic('check')}${t('wDone')}</span>` : ''}<span class="muted num" style="font-size:13px">${list.filter(x => x.end).length}/${list.length}${wl ? ' · ' + fDur(wl) : ''}</span></div>${list.map(x => taskRow(x, false, wid || null)).join('')}</div>`; }).join('')}</div></div>
     ${canEdit() ? `<div class="quick" style="margin-top:22px">
       ${j.status === 'open' ? `<button class="btn" data-act="add-task" data-id="${j.id}">${ic('plus')}${t('addTask')}</button><span style="flex:1"></span><button class="btn y" data-act="close-job" data-id="${j.id}">${ic('check')}${t('closeJob')}</button>`
         : isAdmin() || supCanSeeJob(j) ? `<button class="btn" data-act="reopen-job" data-id="${j.id}">${t('reopen')}</button>` : ''}
       ${isAdmin() ? `<button class="btn r" data-act="delete-job" data-id="${j.id}">${ic('trash')}${t('deleteJob')}</button>` : ''}</div>` : ''}`;
   return { title: esc(carTitle(j)), sub: j.car.plate ? esc(j.car.plate) : '', back: u.role === 'supervisor' ? '#/floor' : '#/history', html, actions: isAdmin() ? `<button class="btn icon r" data-act="delete-job" data-id="${j.id}" title="${t('deleteJob')}">${ic('trash')}</button>` : '' };
 }
+/* ---------------- car map (top view, front at the top) ---------------- */
+const CAR_SHAPES = {
+  fbumper: 'M46 40 Q46 14 100 12 Q154 14 154 40 Z',
+  hood: 'M52 44 H148 V118 H52 Z',
+  fender_l: 'M30 52 Q32 44 48 44 V118 H30 Z', fender_r: 'M170 52 Q168 44 152 44 V118 H170 Z',
+  mirror_l: 'M12 132 H29 V146 H12 Z', mirror_r: 'M171 132 H188 V146 H171 Z',
+  windshield: 'M56 122 H144 L136 150 H64 Z',
+  door_fl: 'M30 122 H48 V194 H30 Z', door_fr: 'M152 122 H170 V194 H152 Z',
+  door_rl: 'M30 197 H48 V264 H30 Z', door_rr: 'M152 197 H170 V264 H152 Z',
+  win_fl: 'M51 124 H58 V194 H51 Z', win_fr: 'M142 124 H149 V194 H142 Z',
+  win_rl: 'M51 197 H58 V262 H51 Z', win_rr: 'M142 197 H149 V262 H142 Z',
+  roof: 'M62 153 H138 V262 H62 Z', sunroof: 'M80 168 H120 V200 H80 Z',
+  rear_glass: 'M64 265 H136 L144 290 H56 Z',
+  quarter_l: 'M30 268 H48 V350 H34 Q30 346 30 338 Z', quarter_r: 'M170 268 H152 V350 H166 Q170 346 170 338 Z',
+  trunk: 'M52 293 H148 V350 H52 Z',
+  rbumper: 'M46 354 H154 Q154 384 100 386 Q46 384 46 354 Z',
+};
+const partState = list => !list.length ? 'none' : list.some(x => x.start && !x.end && !x.pausedAt) ? 'run' : list.some(x => x.start && !x.end) ? 'pause' : list.some(x => !x.end) ? 'wait' : 'done';
+function carMap(j, ts) {
+  const byPart = {}; ts.forEach(x => (byPart[x.part] = byPart[x.part] || []).push(x));
+  const shape = k => { const list = byPart[k] || [], st = partState(list), n = new Set(list.flatMap(wids)).size;
+    return `<path d="${CAR_SHAPES[k]}" class="cm-p ${st}" ${list.length ? `data-act="part-sheet" data-job="${j.id}" data-part="${k}"` : ''}><title>${esc(nm(PARTS[k]))}${n ? ' · ' + n : ''}</title></path>`; };
+  const order = ['fbumper', 'hood', 'fender_l', 'fender_r', 'mirror_l', 'mirror_r', 'door_fl', 'door_fr', 'door_rl', 'door_rr', 'quarter_l', 'quarter_r', 'trunk', 'rbumper', 'windshield', 'win_fl', 'win_fr', 'win_rl', 'win_rr', 'rear_glass', 'roof', 'sunroof'];
+  const extra = Object.keys(byPart).filter(k => !CAR_SHAPES[k]);
+  const lg = st => `<span class="cm-lg"><i class="${st}"></i>${t({ wait: 'sWait', run: 'sRun', pause: 'sPause', done: 'sDone' }[st])}</span>`;
+  return `<section class="card car-map"><div class="cm-h">${ic('car')}<b>${t('carMap')}</b></div><small class="muted">${t('carMapHint')}</small>
+    <svg viewBox="0 0 200 400" dir="ltr" class="cm-svg"><rect x="28" y="20" width="144" height="356" rx="40" class="cm-body"/>${order.map(shape).join('')}
+      <text x="100" y="8" class="cm-dir">▲</text></svg>
+    ${extra.length ? `<div class="cm-extra"><small class="muted">${t('otherParts')}</small>${extra.map(k => `<button class="cm-chip ${partState(byPart[k])}" data-act="part-sheet" data-job="${j.id}" data-part="${k}">${esc(nm(PARTS[k]))}</button>`).join('')}</div>` : ''}
+    <div class="cm-legend">${['run', 'pause', 'wait', 'done'].map(lg).join('')}</div></section>`;
+}
+function partSheet(jobId, part) {
+  const j = jobById(jobId); if (!j) return;
+  const list = S.tasks.filter(x => x.jobId === jobId && x.part === part), st = partState(list);
+  const edit = canEdit() && (isAdmin() || supCanSeeJob(j));
+  const nRun = list.filter(x => x.start && !x.end && !x.pausedAt).length, nPz = list.filter(x => x.start && !x.end && x.pausedAt).length, nWait = list.filter(x => !x.start).length;
+  const btns = edit ? [nWait && j.status === 'open' ? `<button class="btn g" data-act="part-start" data-job="${jobId}" data-part="${part}">${ic('play')}${t('partStartAll')}</button>` : '',
+    nRun ? `<button class="btn amber" data-act="part-pause" data-job="${jobId}" data-part="${part}">${ic('pause')}${t('partPauseAll')}</button>` : '',
+    nPz ? `<button class="btn g" data-act="part-resume" data-job="${jobId}" data-part="${part}">${ic('play')}${t('partResumeAll')}</button>` : '',
+    nRun + nPz ? `<button class="btn r" data-act="part-finish" data-job="${jobId}" data-part="${part}">${ic('stop')}${t('partDoneAll')}</button>` : ''].join('') : '';
+  const rows = list.length ? list.map(x => { const ws = wids(x).map(workerById).filter(Boolean);
+    return `<div class="pt-row"><div class="pt-w">${ws.length ? ws.map(w => avatar(w, 'sm')).join('') : avatar(null, 'sm')}<b>${ws.length ? ws.map(w => esc(wn(w))).join('، ') : t('unassigned')}</b></div>${taskRow(x, false, wids(x)[0] || null)}</div>`; }).join('') : `<div class="empty">${t('partEmpty')}</div>`;
+  openSheet(`<div class="sheet-h"><h3>${esc(nm(PARTS[part]))}<br><small class="muted" style="font-weight:400;font-size:13px">${esc(carTitle(j))} · <span class="cm-st ${st}">${t({ wait: 'sWait', run: 'sRun', pause: 'sPause', done: 'sDone', none: 'sWait' }[st])}</span></small></h3><button class="btn icon ghost" data-act="close-sheet">${ic('x')}</button></div>
+    ${btns ? `<div class="pt-btns">${btns}</div>` : ''}${rows}`);
+  const sh = $('.sheet'); sh.dataset.part = part; sh.dataset.job = jobId;
+  tick();
+}
+function partAll(jobId, part, op) {
+  const list = S.tasks.filter(x => x.jobId === jobId && x.part === part && !x.end); let n = 0;
+  if (op === 'finish') {
+    const go = list.filter(x => x.start); if (!go.length) return;
+    const ws = new Set(go.flatMap(wids)).size;
+    if (!confirmBox(t('partFinishQ', nm(PARTS[part]), ws || go.length))) return;
+    go.forEach(x => { endTask(x); n++; }); db.save(); toast(t('finished')); return refresh();
+  }
+  if (op === 'start') {
+    const go = list.filter(x => !x.start);
+    const busy = [...new Set(go.flatMap(wids))].filter(w => runningOf(w)).map(w => wn(workerById(w))).filter(Boolean);
+    if (busy.length && !confirmBox(t('alreadyRunning', busy.join('، ')))) return;
+    const now = Date.now(); go.forEach(x => { x.start = now; n++; });
+  }
+  if (op === 'pause') list.forEach(x => { if (x.start && !x.pausedAt) { pauseTask(x, true); n++; } });
+  if (op === 'resume') list.forEach(x => { if (x.pausedAt) { resumeTask(x, true); n++; } });
+  if (!n) return; db.save(); toast(t(op === 'pause' ? 'pausedToast' : 'started')); refresh();
+}
+
 function editTaskSheet(id, isNew = false, jobId = null) {
   const x = isNew ? { id: null, jobId, service: jobById(jobId).services[0], part: '', workerIds: [], filmId: '', shade: '', start: null, end: null, rework: false } : S.tasks.find(t => t.id === id);
   if (!x) return;
-  const cur = isNew ? wids(x) : [...new Set(mates(x).flatMap(wids))], workers = S.workers.filter(w => w.active || cur.includes(w.id));
+  const cur = isNew ? wids(x) : [...new Set(mates(x).flatMap(wids))], team = SVC_TEAM(x.service), workers = S.workers.filter(w => (w.active && teamOf(w) === team) || cur.includes(w.id));
   const films = S.films.filter(f => (f.active || f.id === x.filmId) && ['ppf', 'tint'].includes(f.type));
   openSheet(`<form data-form="task" data-id="${x.id || ''}" data-job="${x.jobId}">
     <div class="sheet-h"><h3>${isNew ? t('addTask') : t('editTask')}</h3><button type="button" class="btn icon ghost" data-act="close-sheet">${ic('x')}</button></div>
@@ -783,7 +857,7 @@ function editTaskSheet(id, isNew = false, jobId = null) {
         <div class="field" id="shade-field" style="${needShade(x.service, x.kind) ? '' : 'display:none'}"><label>${t('shade')}</label>${shadeSel(x.shade || '', 'name="shade"').replace('inp sm', 'inp')}</div>
       </div>
       <div class="field"><label>${t('workersMany')}</label><input type="hidden" name="workerIds" value="${cur.join(',')}">
-        <div class="pick-grid">${workers.map(w => `<button type="button" class="pick ${cur.includes(w.id) ? 'on' : ''}" data-act="pick-task-worker" data-id="${w.id}">${avatar(w)}<span>${esc(wn(w))}</span></button>`).join('')}</div></div>
+        <div class="pick-grid" id="task-picks">${workers.map(w => `<button type="button" class="pick ${cur.includes(w.id) ? 'on' : ''}" data-act="pick-task-worker" data-id="${w.id}">${avatar(w)}<span>${esc(wn(w))}</span></button>`).join('')}</div></div>
       ${isNew ? '' : `<div class="time-box"><div class="time-h">${ic('clock')}<b>${t('timeSec')}</b><small>${t('timeHint')}</small></div><div class="form-grid three">
         <div class="field"><label>${t('startTime')}</label><input class="inp num" type="datetime-local" name="start" value="${toLocalInput(x.start)}" data-act-change="task-time"></div>
         <div class="field"><label>${t('endTime')}</label><input class="inp num" type="datetime-local" name="end" value="${toLocalInput(x.end)}" data-act-change="task-time"></div>
@@ -1176,6 +1250,11 @@ const ACTS = {
   pin: el => pinPress(el.dataset.n),
   'sheet-bg': (el, e) => { if (e.target === el) closeSheet(); }, 'close-sheet': closeSheet,
   'worker-sheet': el => workerSheet(el.dataset.id),
+  'part-sheet': el => partSheet(el.dataset.job, el.dataset.part),
+  'part-finish': el => partAll(el.dataset.job, el.dataset.part, 'finish'),
+  'part-start': el => partAll(el.dataset.job, el.dataset.part, 'start'),
+  'part-pause': el => partAll(el.dataset.job, el.dataset.part, 'pause'),
+  'part-resume': el => partAll(el.dataset.job, el.dataset.part, 'resume'),
   start: el => startTask(el.dataset.id), finish: el => finishTask(el.dataset.id),
   svc: el => { const k = el.dataset.k, i = draft.services.indexOf(k);
     const film = o => ['ppf', 'wrap'].includes(SVC[o].g); // full / half / quarter PPF and colour change are all film on the body: only one of them
@@ -1241,6 +1320,9 @@ function taskFormSync(f) {
   $('#shade-field', f).style.display = needShade(svc, kind) ? '' : 'none';
   $('#task-part', f).innerHTML = poolOf(svc, kind).map(p => `<option value="${p}">${esc(nm(PARTS[p]))}</option>`).join('');
   $('#tint-fields', f).style.display = needFilm(svc) ? '' : 'none';
+  const team = SVC_TEAM(svc), on = new Set(f.workerIds.value.split(',').filter(Boolean)), grid = $('#task-picks', f);
+  if (grid && grid.dataset.team !== team) { grid.dataset.team = team; S.workers.filter(w => w.active && teamOf(w) !== team).forEach(w => on.delete(w.id)); f.workerIds.value = [...on].join(',');
+    grid.innerHTML = S.workers.filter(w => (w.active && teamOf(w) === team) || on.has(w.id)).map(w => `<button type="button" class="pick ${on.has(w.id) ? 'on' : ''}" data-act="pick-task-worker" data-id="${w.id}">${avatar(w)}<span>${esc(wn(w))}</span></button>`).join(''); }
 }
 const FORMS = {
   'cloud-link': async f => { const b = f.querySelector('button'); b.disabled = true; const ok = await cloud.link(f.pw.value); if (!ok) { b.disabled = false; f.pw.value = ''; toast(LANG === 'ar' ? 'كلمة السر غير صحيحة' : 'Wrong password'); } },
