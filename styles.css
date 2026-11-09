@@ -412,3 +412,24 @@ svg.car .pt:active{opacity:.7}
 .rep tr.team td{background:#0A2463 !important;color:#FBBF15;font-weight:700}
 @media(max-width:640px){.tbl.prog .xm{display:none}}
 .login-panel h2{text-align:center}
+/* cloud sync indicator */
+.sync-dot{position:fixed;inset-inline-start:12px;bottom:calc(76px + env(safe-area-inset-bottom));z-index:60;font-size:11px;font-weight:600;padding:3px 9px 3px 8px;border-radius:99px;background:rgba(4,11,31,.85);border:1px solid var(--line);display:flex;align-items:center;gap:6px;pointer-events:none}
+.sync-dot[hidden]{display:none}
+.sync-dot::before{content:'';width:7px;height:7px;border-radius:50%;background:#ff5d6c}
+.sync-dot.ok::before{background:#2FD896}.sync-dot.busy::before{background:#FBBF15}
+@media(min-width:900px){.sync-dot{bottom:14px}}
+/* no zoom on phones: no double-tap zoom, no zoom when an input gets focus */
+html{touch-action:manipulation;-webkit-text-size-adjust:100%}
+button,a,.pad button{touch-action:manipulation}
+@media(max-width:860px){.inp,input,select,textarea{font-size:16px}}
+/* iPhone home-screen app: keep the header (and its back button) below the notch / status bar */
+.top{padding-top:calc(14px + env(safe-area-inset-top))}
+.top>a.btn.icon{flex:0 0 auto;border-color:rgba(251,191,21,.45);color:var(--yellow)}
+.top h1{overflow:hidden;text-overflow:ellipsis}
+.lang-btn{top:calc(14px + env(safe-area-inset-top))!important}
+/* break / alert bar */
+.alert-bar{position:fixed;z-index:80;left:50%;transform:translateX(-50%);bottom:calc(84px + env(safe-area-inset-bottom));width:min(560px,calc(100% - 24px));display:flex;align-items:center;gap:10px;padding:12px 14px;border-radius:16px;background:#FBBF15;color:#0A2463;font-weight:600;font-size:14px;box-shadow:0 12px 40px rgba(0,0,0,.45);animation:abin .3s ease}
+.alert-bar span{flex:1}.alert-bar svg{stroke:#0A2463;flex:0 0 auto}.alert-bar .btn.ghost{color:#0A2463}.alert-bar .btn.ghost svg{stroke:#0A2463}
+@keyframes abin{from{opacity:0;transform:translate(-50%,12px)}}
+@media(min-width:861px){.alert-bar{bottom:24px}}
+@media(max-width:860px){.top{background:rgba(5,13,36,.94);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);margin-inline:calc(-1 * var(--gutter));padding-inline:var(--gutter);padding-bottom:10px;border-bottom:1px solid var(--line)}}

@@ -88,7 +88,8 @@ const KINDS = { rep: ['tint', 'ppf'], pol: ['ext', 'int', 'both'] };
 const KIND_DEF = { rep: 'ppf', pol: 'ext' };
 const hasKind = svc => !!KINDS[SVC[svc].g];
 const kindLabel = k => t({ tint: 'replTint', ppf: 'replPpf', ext: 'polExt', int: 'polInt', both: 'polBoth' }[k] || k);
-const needShade = (svc, kind) => isTintLike(svc, kind) && SVC[svc].g !== 'jam'; // the windshield only needs the film type
+const needShade = () => false; // owner: tint needs neither shade nor film
+const needFilm = svc => SVC[svc].g === 'jam'; // the windshield service only needs the film type
 const dKind = svc => (draft && draft.kind && draft.kind[svc]) || KIND_DEF[SVC[svc].g] || 'ppf';
 const SVC_TEAM = svc => (SVC[svc].g === 'cer' || SVC[svc].g === 'pol') ? 'polish' : 'ppf';
 const PALETTE = ['#FBBF15', '#5FB4FF', '#2FD896', '#FF7A59', '#B98CFF', '#FF5D9E', '#6FE3D0', '#F2E863', '#9DB4FF', '#FFA94D'];
@@ -161,7 +162,7 @@ const T = {
     closeConfirm: 'بعض المهام لم تنتهِ بعد. إغلاق السيارة على أي حال؟', deleteConfirm: 'حذف نهائي لهذه السيارة وكل مهامها؟',
     status: 'الحالة', open: 'قيد العمل', closed: 'مغلقة', editTask: 'تعديل المهمة', service: 'الخدمة', part: 'القطعة',
     startTime: 'وقت البدء', endTime: 'وقت الانتهاء', rework: 'إعادة عمل (خطأ وتمت إعادته)', delete: 'حذف', save: 'حفظ', cancel: 'إلغاء',
-    edited: 'معدّل', halfPart: 'نصف', polWhat: 'نوع البوليش', polExt: 'خارجي', polInt: 'داخلي', polBoth: 'داخلي وخارجي', jamSpec: 'نوع العازل', newColor: 'اللون الجديد', pinTaken: 'هذا الرمز مستخدم لحساب آخر — اختر رمزاً مختلفاً', team: 'الفريق', progress: 'تطوّر الأداء مع الوقت', weekVs: 'أسبوع بأسبوع', monthVs: 'شهر بشهر', ptsDay: 'نقاط/يوم', change: 'التغيّر', trend6: 'آخر 6 فترات', soFar: 'حتى الآن', prevShort: 'السابق', curShort: 'الحالي', new: 'جديد', teamRate: 'متوسط الفريق', progressHint: 'نقارن معدل الإنتاج اليومي (نقاط صعوبة القطع ÷ أيام العمل) حتى تكون المقارنة عادلة حتى لو الفترة الحالية لم تنتهِ بعد. الخط الأصفر يوضح اتجاه العامل في آخر 6 فترات.', lowRank: 'الأضعف', noWorkP: 'لا عمل في هذه الفترة', manualT: 'وقت يدوي', editedT: 'وقت معدّل', addTime: 'إضافة وقت', timeSec: 'الوقت', timeHint: 'إذا نسيت تسجيل الوقت أو كنت مشغولاً، أدخله هنا تقريبياً.', pauseMin: 'وقت التوقف (دقيقة)', netDur: 'مدة العمل', editLog: 'سجل تعديل الوقت', was: 'كان', none: 'لا شيء', manualNote: '{0} مهام وقتها أُدخل أو عُدّل يدوياً في هذه الفترة', photoErr: 'لم نستطع قراءة الصورة — اختر صورة JPG أو PNG (صور HEIC من الآيفون لا تُقرأ في متصفح الكمبيوتر)', pauseTooLong: 'وقت التوقف أطول من مدة العمل', noStartEnd: 'أدخل وقت البدء أولاً', alreadyRunning: '{0} يعمل الآن على مهمة أخرى — ابدأ على أي حال؟', started: 'بدأ العمل', finished: 'انتهت المهمة',
+    edited: 'معدّل', breakStart: 'بداية الاستراحة (إيقاف تلقائي)', breakEnd: 'رجوع للعمل (تذكير)', breakWarn: 'تنبيه قبل الاستراحة (دقائق)', breakSoon: '⏰ باقي {0} دقائق على الاستراحة — {1} مهمة جارية ستتوقف تلقائياً', breakPaused: '⏸ وقت الاستراحة: تم إيقاف {0} مهمة تلقائياً. استأنفوا الساعة {1}', breakOver: '▶ انتهت الاستراحة — {0} مهمة متوقفة بانتظار الاستئناف', halfPart: 'نصف', polWhat: 'نوع البوليش', polExt: 'خارجي', polInt: 'داخلي', polBoth: 'داخلي وخارجي', jamSpec: 'نوع الفيلم', newColor: 'اللون الجديد', pinTaken: 'هذا الرمز مستخدم لحساب آخر — اختر رمزاً مختلفاً', team: 'الفريق', progress: 'تطوّر الأداء مع الوقت', weekVs: 'أسبوع بأسبوع', monthVs: 'شهر بشهر', ptsDay: 'نقاط/يوم', change: 'التغيّر', trend6: 'آخر 6 فترات', soFar: 'حتى الآن', prevShort: 'السابق', curShort: 'الحالي', new: 'جديد', teamRate: 'متوسط الفريق', progressHint: 'نقارن معدل الإنتاج اليومي (نقاط صعوبة القطع ÷ أيام العمل) حتى تكون المقارنة عادلة حتى لو الفترة الحالية لم تنتهِ بعد. الخط الأصفر يوضح اتجاه العامل في آخر 6 فترات.', lowRank: 'الأضعف', noWorkP: 'لا عمل في هذه الفترة', manualT: 'وقت يدوي', editedT: 'وقت معدّل', addTime: 'إضافة وقت', timeSec: 'الوقت', timeHint: 'إذا نسيت تسجيل الوقت أو كنت مشغولاً، أدخله هنا تقريبياً.', pauseMin: 'وقت التوقف (دقيقة)', netDur: 'مدة العمل', editLog: 'سجل تعديل الوقت', was: 'كان', none: 'لا شيء', manualNote: '{0} مهام وقتها أُدخل أو عُدّل يدوياً في هذه الفترة', photoErr: 'لم نستطع قراءة الصورة — اختر صورة JPG أو PNG (صور HEIC من الآيفون لا تُقرأ في متصفح الكمبيوتر)', pauseTooLong: 'وقت التوقف أطول من مدة العمل', noStartEnd: 'أدخل وقت البدء أولاً', alreadyRunning: '{0} يعمل الآن على مهمة أخرى — ابدأ على أي حال؟', started: 'بدأ العمل', finished: 'انتهت المهمة',
     noTasksW: 'لا توجد مهام معيّنة لهذا العامل', week: 'أسبوع', month: 'شهر', thisWeek: 'هذا الأسبوع',
     kCars: 'السيارات', kTasks: 'القطع المنجزة', kHours: 'ساعات العمل', kAvgCar: 'متوسط العمل للسيارة', kTurn: 'متوسط مدة التسليم', kRework: 'نسبة إعادة العمل',
     ranking: 'ترتيب الإنتاجية', score: 'التقييم', cars: 'سيارات', hours: 'ساعات', eff: 'الكفاءة', util: 'الاستغلال', avgCar: 'متوسط/سيارة',
@@ -204,7 +205,7 @@ const T = {
     closeConfirm: 'Some tasks are not finished. Close the car anyway?', deleteConfirm: 'Permanently delete this car and all its tasks?',
     status: 'Status', open: 'In progress', closed: 'Closed', editTask: 'Edit task', service: 'Service', part: 'Panel',
     startTime: 'Start time', endTime: 'End time', rework: 'Rework (mistake, redone)', delete: 'Delete', save: 'Save', cancel: 'Cancel',
-    edited: 'edited', halfPart: 'half', polWhat: 'Polish type', polExt: 'Exterior', polInt: 'Interior', polBoth: 'Interior + exterior', jamSpec: 'Film type', newColor: 'New colour', pinTaken: 'This code is used by another account — pick a different one', team: 'Team', progress: 'Progress over time', weekVs: 'Week vs week', monthVs: 'Month vs month', ptsDay: 'Pts/day', change: 'Change', trend6: 'Last 6 periods', soFar: 'so far', prevShort: 'prev', curShort: 'now', new: 'new', teamRate: 'Team average', progressHint: 'We compare the daily production rate (panel difficulty points ÷ working days) so it stays fair even while the current period is still running. The yellow line shows each worker\'s direction over the last 6 periods.', lowRank: 'lowest', noWorkP: 'no work this period', manualT: 'manual time', editedT: 'time edited', addTime: 'Add time', timeSec: 'Time', timeHint: 'Forgot to log it or were busy? Enter an approximate time here.', pauseMin: 'Paused (minutes)', netDur: 'Work time', editLog: 'Time edit history', was: 'was', none: 'none', manualNote: '{0} tasks had their time entered or edited by hand in this period', photoErr: 'Could not read the photo — pick a JPG or PNG (iPhone HEIC photos do not open in desktop browsers)', pauseTooLong: 'Paused time is longer than the work span', noStartEnd: 'Enter the start time first', alreadyRunning: '{0} is already working on another task — start anyway?', started: 'Started', finished: 'Task finished',
+    edited: 'edited', breakStart: 'Break starts (auto-pause)', breakEnd: 'Back to work (reminder)', breakWarn: 'Warn before break (minutes)', breakSoon: '⏰ {0} minutes to the break — {1} running tasks will pause automatically', breakPaused: '⏸ Break time: {0} tasks paused automatically. Resume at {1}', breakOver: '▶ Break is over — {0} paused tasks waiting to resume', halfPart: 'half', polWhat: 'Polish type', polExt: 'Exterior', polInt: 'Interior', polBoth: 'Interior + exterior', jamSpec: 'Film type', newColor: 'New colour', pinTaken: 'This code is used by another account — pick a different one', team: 'Team', progress: 'Progress over time', weekVs: 'Week vs week', monthVs: 'Month vs month', ptsDay: 'Pts/day', change: 'Change', trend6: 'Last 6 periods', soFar: 'so far', prevShort: 'prev', curShort: 'now', new: 'new', teamRate: 'Team average', progressHint: 'We compare the daily production rate (panel difficulty points ÷ working days) so it stays fair even while the current period is still running. The yellow line shows each worker\'s direction over the last 6 periods.', lowRank: 'lowest', noWorkP: 'no work this period', manualT: 'manual time', editedT: 'time edited', addTime: 'Add time', timeSec: 'Time', timeHint: 'Forgot to log it or were busy? Enter an approximate time here.', pauseMin: 'Paused (minutes)', netDur: 'Work time', editLog: 'Time edit history', was: 'was', none: 'none', manualNote: '{0} tasks had their time entered or edited by hand in this period', photoErr: 'Could not read the photo — pick a JPG or PNG (iPhone HEIC photos do not open in desktop browsers)', pauseTooLong: 'Paused time is longer than the work span', noStartEnd: 'Enter the start time first', alreadyRunning: '{0} is already working on another task — start anyway?', started: 'Started', finished: 'Task finished',
     noTasksW: 'No tasks assigned to this worker', week: 'Week', month: 'Month', thisWeek: 'This week',
     kCars: 'Cars', kTasks: 'Panels done', kHours: 'Labor hours', kAvgCar: 'Avg labor / car', kTurn: 'Avg turnaround', kRework: 'Rework rate',
     ranking: 'Productivity ranking', score: 'Score', cars: 'Cars', hours: 'Hours', eff: 'Efficiency', util: 'Utilization', avgCar: 'Avg/car',
@@ -250,12 +251,17 @@ const db = {
   load() {
     try { S = JSON.parse(localStorage.getItem(STORE_KEY)); } catch { S = null; }
     if (!S || !S.users) { S = seed(); db.save(); }
-    let mig = false; const UEN = { 'المشرف': 'Supervisor', 'المدير': 'Manager', 'المالك': 'Owner' }; S.users.forEach(u => { if (u.nameEn === undefined) { u.nameEn = UEN[u.name] || ''; mig = true; } }); S.workers.forEach(w => { if (w.nameEn === undefined && EN_NAMES[w.name]) { w.nameEn = EN_NAMES[w.name]; mig = true; } }); S.tasks.forEach(x => { if (!x.workerIds) { x.workerIds = x.workerId ? [x.workerId] : []; delete x.workerId; mig = true; } }); S.workers.forEach(w => { if (!w.photo) { const r = ROSTER.find(r => r.name === w.name); if (r && r.photo) { w.photo = r.photo; mig = true; } } }); if (mig) db.save();
+    let mig = false; const UEN = { 'المشرف': 'Supervisor', 'المدير': 'Manager', 'المالك': 'Owner' }; S.users.forEach(u => { if (u.nameEn === undefined) { u.nameEn = UEN[u.name] || ''; mig = true; } }); S.workers.forEach(w => { if (w.nameEn === undefined && EN_NAMES[w.name]) { w.nameEn = EN_NAMES[w.name]; mig = true; } }); S.tasks.forEach(x => { if (!x.workerIds) { x.workerIds = x.workerId ? [x.workerId] : []; delete x.workerId; mig = true; } }); S.mig = S.mig || {};
+    if (!S.mig.order1) { const O = ['ايدغارد', 'مايكل', 'جيرسون', 'ابران', 'ليندون', 'بلال', 'حسين', 'رضوان', 'بركاش', 'صيام', 'جويل', 'رونالدو', 'بيمبا', 'اجمط', 'عدنان', 'نيما'], rank = w => { const i = O.indexOf(w.name); return teamOf(w) !== 'ppf' ? 1000 : i < 0 ? 500 : i; };
+      S.workers = S.workers.map((w, i) => [w, i]).sort((a, b) => rank(a[0]) - rank(b[0]) || a[1] - b[1]).map(a => a[0]); S.mig.order1 = true; mig = true; }
+    if (!S.settings.breakStart) { Object.assign(S.settings, { breakStart: '12:00', breakEnd: '16:00', breakWarn: 5 }); mig = true; }
+    if (!S.mig.wael) { if (!S.users.some(u => u.name === 'وائل')) S.users.push({ id: 'u_wael', name: 'وائل', nameEn: 'Wael', title: 'المدير التجاري', titleEn: 'Commercial manager', role: 'manager', pin: H('3333'), active: true }); S.mig.wael = true; mig = true; }
+    S.workers.forEach(w => { if (!w.photo) { const r = ROSTER.find(r => r.name === w.name); if (r && r.photo) { w.photo = r.photo; mig = true; } } }); if (mig) db.save();
     if ((S.rosterV || 1) < ROSTER_V) { // replace the old demo team with the real one, keep anything the owner added
       const added = S.workers.filter(w => !w.demo && !/^w\d+$/.test(w.id)); S.workers = [...roster(), ...added]; S.rosterV = ROSTER_V; db.save();
     }
   },
-  save() { try { localStorage.setItem(STORE_KEY, JSON.stringify(S)); } catch (e) { toast('⚠ ' + e.message); } },
+  save() { try { localStorage.setItem(STORE_KEY, JSON.stringify(S)); } catch (e) { toast('⚠ ' + e.message); } if (window.cloud) cloud.queue(); },
 };
 function mulberry(a) { return () => { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
 function seed() {
@@ -273,7 +279,7 @@ function seed() {
       ['Avery SW900', 'wrap'], ['3M 2080', 'wrap'], ['Gtechniq Crystal Serum', 'cer'],
     ].map(([name, type], i) => ({ id: 'f' + (i + 1), name, type, active: true })),
     jobs: [], tasks: [],
-    settings: { shop: 'Insulator', wa: '', email: '', shiftHours: 9, autoLock: 10 },
+    settings: { shop: 'Insulator', wa: '', email: '', shiftHours: 9, autoLock: 10, breakStart: '12:00', breakEnd: '16:00', breakWarn: 5 },
   };
   makeDemo(s);
   return s;
@@ -340,8 +346,8 @@ const jobById = id => S.jobs.find(j => j.id === id);
 const tasksOf = jobId => S.tasks.filter(t => t.jobId === jobId);
 const wColor = w => w ? (w.color || PALETTE[S.workers.indexOf(w) % PALETTE.length]) : '#5d6a8c';
 // How hard each panel is (a door = 1). Used for workload points; a shared panel's points are split between its workers.
-const DIFFICULTY = { fbumper: 1.6, rbumper: 1.6, hood: 1.4, roof: 1.3, trunk: 1.2, fender_l: 1.15, fender_r: 1.15, quarter_l: 1.3, quarter_r: 1.3, door_fl: 1, door_fr: 1, door_rl: 1, door_rr: 1, mirror_l: .6, mirror_r: .6,
-  windshield: 1.2, rear_glass: 1.1, win_fl: .5, win_fr: .5, win_rl: .5, win_rr: .5, sunroof: .6, whole: 4 };
+const DIFFICULTY = { fbumper: 2, rbumper: 1.85, quarter_l: 1.7, quarter_r: 1.7, roof: 1.6, hood: 1.2, trunk: 1.1, fender_l: 1.1, fender_r: 1.1, door_fl: 1, door_fr: 1, door_rl: 1, door_rr: 1, mirror_l: .6, mirror_r: .6,
+  windshield: 1.6, rear_glass: 1, win_fl: .5, win_fr: .5, win_rl: .5, win_rr: .5, sunroof: .6, whole: 4 };
 // in a quarter PPF only half the hood and half of each front fender are covered (the bumper is full)
 const QUARTER_HALF = ['hood', 'fender_l', 'fender_r'];
 const isHalfPart = (svc, part) => svc === 'quarter_ppf' && QUARTER_HALF.includes(part);
@@ -376,6 +382,7 @@ const NAV = [
 ];
 const ACCESS = { floor: ['admin', 'manager', 'supervisor'], new: ['admin', 'supervisor'], job: ['admin', 'manager', 'supervisor'], dashboard: ['admin', 'manager'], worker: ['admin', 'manager'], history: ['admin', 'manager'], settings: ['admin'] };
 const canEdit = () => ['admin', 'supervisor'].includes(me()?.role);
+const roleName = u => u.title ? (LANG === 'ar' ? u.title : (u.titleEn || u.title)) : t(u.role);
 const isAdmin = () => me()?.role === 'admin';
 function supCanSeeJob(j) { return j.status === 'open' || (j.closedAt && j.closedAt >= startOfDay(Date.now())) || startOfDay(j.createdAt) === startOfDay(Date.now()); }
 
@@ -461,6 +468,7 @@ const homeOf = () => 'floor';
 function render() {
   document.documentElement.lang = LANG; document.documentElement.dir = LANG === 'ar' ? 'rtl' : 'ltr';
   document.title = 'Insulator · ' + t('app');
+  if (window.cloud && !cloud.linked) return cloud.renderLink(); // shared database: link the device once first
   const u = me();
   if (!u) return renderLogin();
   let r = route();
@@ -481,7 +489,7 @@ function shell(r, v) {
       <div class="brand"><img src="logo.png" alt="Insulator"><div><b>${t('app')}</b><small>${t('appSub')}</small></div></div>
       ${navLinks('nav-i')}
       <div class="spacer"></div>
-      <div class="me"><span class="av sm" style="--c:#FBBF15">${esc(initials(un(u)))}</span><div class="who"><b>${esc(un(u))}</b><small>${t(u.role)}</small></div>
+      <div class="me"><span class="av sm" style="--c:#FBBF15">${esc(initials(un(u)))}</span><div class="who"><b>${esc(un(u))}</b><small>${esc(roleName(u))}</small></div>
         <button class="btn sm icon ghost" data-act="lang" title="Language">${LANG === 'ar' ? 'EN' : 'ع'}</button>
         <button class="btn sm icon ghost" data-act="logout" title="${t('lock')}">${ic('lock')}</button></div>
     </aside>
@@ -522,7 +530,7 @@ function pinPress(n) {
   const dots = $('#dots'); if (dots) dots.innerHTML = [0, 1, 2, 3].map(i => `<i class="${i < pinBuf.length ? 'f' : ''}"></i>`).join('');
   if (pinBuf.length === 4) {
     const h = H(pinBuf), u = S.users.find(x => x.active && x.pin === h);
-    if (u) { session = { uid: u.id, at: Date.now() }; sessionStorage.setItem(SESSION_KEY, JSON.stringify(session)); loginSel = null; pinBuf = ''; lastAct = Date.now(); if (!location.hash || location.hash === '#/') location.hash = '#/floor'; render(); }
+    if (u) { try { if (['admin', 'supervisor'].includes(u.role) && 'Notification' in window && Notification.permission === 'default') Notification.requestPermission(); } catch { } session = { uid: u.id, at: Date.now() }; sessionStorage.setItem(SESSION_KEY, JSON.stringify(session)); loginSel = null; pinBuf = ''; lastAct = Date.now(); if (!location.hash || location.hash === '#/') location.hash = '#/floor'; render(); }
     else { pinBuf = ''; setTimeout(() => { const d = $('#dots'); if (d) { d.classList.add('err'); d.innerHTML = '<i></i><i></i><i></i><i></i>'; setTimeout(() => d.classList.remove('err'), 450); } toast(t('wrongPin')); }, 120); }
   }
 }
@@ -575,7 +583,7 @@ function demoBanner() { return `<div class="demo-banner">${ic('info')}<span>${t(
 
 const SHADES = [5, 15, 20, 30, 35, 40, 50, 60, 70, 80];
 const avatars = (ids, cls = 'sm') => { const ws = ids.map(workerById).filter(Boolean); return ws.length ? `<span class="avs">${ws.map(w => avatar(w, cls)).join('')}</span>` : avatar(null, cls); };
-const tintInfo = x => !isTintLike(x.service, x.kind) ? '' : [filmById(x.filmId)?.name, x.shade ? x.shade + '%' : ''].filter(Boolean).join(' · ');
+const tintInfo = x => !needFilm(x.service) ? '' : [filmById(x.filmId)?.name, x.shade ? x.shade + '%' : ''].filter(Boolean).join(' · ');
 
 function workerSheet(wId) {
   const w = workerById(wId); if (!w) return;
@@ -626,6 +634,7 @@ function selOther(key, opts, ph) {
   return `<div class="field"><label>${t(key)}</label><select class="inp" data-act-change="sel-other" data-key="${key}"><option value="">—</option>${opts.map(([val, label]) => `<option value="${esc(val)}" ${v === val ? 'selected' : ''}>${esc(label)}</option>`).join('')}<option value="__other" ${other ? 'selected' : ''}>${t('other')}</option></select>
     <input class="inp" id="${key}-other" data-car="${key}" placeholder="${ph}" value="${other ? esc(v) : ''}" style="margin-top:8px;${other ? '' : 'display:none'}"></div>`;
 }
+const modelField = () => { const ms = MODELS[draft.car.make] || []; return ms.length ? selOther('model', ms.map(m => [m, m]), t('typeModel')) : `<div class="field"><label>${t('model')}</label><input class="inp" data-car="model" autocomplete="off" placeholder="${t('typeModel')}" value="${esc(draft.car.model)}"></div>`; };
 const modelOpts = make => (MODELS[make] || []).map(m => `<option value="${esc(m)}">`).join('');
 function viewNew() {
   if (!draft) draft = newDraft();
@@ -634,12 +643,12 @@ function viewNew() {
     <section class="card"><h2>${ic('car')}${t('carInfo')}<span class="grow" style="flex:1"></span><span class="chip y num">${ic('clock')}${fDateL(Date.now())}</span></h2>
       <div class="form-grid">
         ${selOther('make', MAKES.map(m => [m, m]), t('typeMake'))}
-        <div class="field"><label>${t('model')}</label><input class="inp" data-car="model" list="models" autocomplete="off" placeholder="${t('typeModel')}" value="${esc(c.model)}"></div>
+        <div id="model-wrap" style="display:contents">${modelField()}</div>
         <div class="field"><label>${t('year')}</label><select class="inp" data-car="year"><option value="">—</option>${YEARS.map(y => `<option ${c.year === y ? 'selected' : ''}>${y}</option>`).join('')}</select></div>
         ${selOther('color', COLORS.map(([ar, en]) => [ar, LANG === 'ar' ? ar : en]), t('typeColor'))}
         ${f('plate', 'text', 'inputmode="numeric"')}${f('customer')}${f('phone', 'tel')}
         <div class="field wide"><label>${t('notes')}</label><textarea class="inp" data-car="notes" rows="2">${esc(c.notes)}</textarea></div>
-      </div><datalist id="models">${modelOpts(c.make)}</datalist></section>
+      </div></section>
     <section class="card"><h2>${ic('shield')}${t('services')}<small class="muted" style="font-weight:400">· ${t('chooseSvc')}</small></h2>
       <div class="svc-grid">${SERVICES.map(svcBtn).join('')}</div><div id="svc-extra">${svcExtra()}</div></section>
     <section class="card" id="assign-zone"></section>
@@ -662,10 +671,10 @@ function renderAssign() {
   if (draft.worker && !workers.some(w => w.id === draft.worker)) draft.worker = null;
   const cnt = wid => Object.values(draft.assign).reduce((a, m) => a + Object.values(m).filter(l => l.includes(wid)).length, 0);
   const aw = draft.worker && workerById(draft.worker);
-  const films = S.films.filter(f => f.active && f.type === 'tint');
+  const films = S.films.filter(f => f.active && ['ppf', 'tint'].includes(f.type));
   const kindPick = !KINDS[g] ? '' : `<div class="field" style="margin-bottom:14px"><label>${t(g === 'pol' ? 'polWhat' : 'replWhat')}</label><div class="seg">${KINDS[g].map(k => `<button class="${kind === k ? 'on' : ''}" data-act="repl-kind" data-k="${k}">${kindLabel(k)}</button>`).join('')}</div></div>`;
   const sh = needShade(svc, kind);
-  const tintBox = !tl ? '' : `<div class="tint-box">
+  const tintBox = !needFilm(svc) ? '' : `<div class="tint-box">
       <div class="sec-h" style="margin:0 0 10px;font-size:14px">${ic('sun')}${t(sh ? 'tintSpec' : 'jamSpec')}</div>
       <div class="tint-row all"><b>${t('applyAll')}</b>${filmSel(draft.tintAll.film, 'data-act-change="tint-all-film"', films)}${sh ? shadeSel(draft.tintAll.shade, 'data-act-change="tint-all-shade"') : ''}</div>
       ${pool.filter(p => p in map).map(p => { const o = draft.tint[p] || {}; return `<div class="tint-row"><span>${esc(nm(PARTS[p]))}</span>${filmSel(o.film || '', `data-act-change="tint-film" data-part="${p}"`, films)}${sh ? shadeSel(o.shade || '', `data-act-change="tint-shade" data-part="${p}"`) : ''}</div>`; }).join('')}
@@ -708,7 +717,7 @@ function saveJob() {
   const job = { id: uid(), createdAt: Date.now(), createdBy: me().id, status: 'open', closedAt: null, services: [...draft.services], films: {}, car: { ...c } };
   S.jobs.push(job);
   draft.services.forEach(k => Object.entries(draft.assign[k]).forEach(([p, ws]) => {
-    const kind = hasKind(k) ? dKind(k) : undefined, tn = isTintLike(k, kind) ? (draft.tint[p] || {}) : {};
+    const kind = hasKind(k) ? dKind(k) : undefined, tn = needFilm(k) ? (draft.tint[p] || {}) : {};
     S.tasks.push({ id: uid() + p, jobId: job.id, service: k, ...(kind ? { kind } : {}), part: p, workerIds: [...ws], filmId: tn.film || '', shade: needShade(k, kind) ? tn.shade || '' : '', start: null, end: null, rework: false });
   }));
   db.save(); draft = null; toast(t('saved')); go('#/job/' + job.id);
@@ -744,7 +753,7 @@ function editTaskSheet(id, isNew = false, jobId = null) {
   const x = isNew ? { id: null, jobId, service: jobById(jobId).services[0], part: '', workerIds: [], filmId: '', shade: '', start: null, end: null, rework: false } : S.tasks.find(t => t.id === id);
   if (!x) return;
   const cur = wids(x), workers = S.workers.filter(w => w.active || cur.includes(w.id));
-  const films = S.films.filter(f => (f.active || f.id === x.filmId) && f.type === 'tint');
+  const films = S.films.filter(f => (f.active || f.id === x.filmId) && ['ppf', 'tint'].includes(f.type));
   openSheet(`<form data-form="task" data-id="${x.id || ''}" data-job="${x.jobId}">
     <div class="sheet-h"><h3>${isNew ? t('addTask') : t('editTask')}</h3><button type="button" class="btn icon ghost" data-act="close-sheet">${ic('x')}</button></div>
     <div class="grid">
@@ -753,7 +762,7 @@ function editTaskSheet(id, isNew = false, jobId = null) {
         <div class="field" id="kind-field" style="${hasKind(x.service) ? '' : 'display:none'}"><label>${t(SVC[x.service].g === 'pol' ? 'polWhat' : 'replWhat')}</label><select class="inp" name="kind" data-act-change="task-kind">${(KINDS[SVC[x.service].g] || []).map(k => `<option value="${k}" ${(x.kind || KIND_DEF[SVC[x.service].g]) === k ? 'selected' : ''}>${kindLabel(k)}</option>`).join('')}</select></div>
         <div class="field"><label>${t('part')}</label><select class="inp" name="part" id="task-part">${poolOf(x.service, x.kind).map(p => `<option value="${p}" ${x.part === p ? 'selected' : ''}>${esc(nm(PARTS[p]))}</option>`).join('')}</select></div>
       </div>
-      <div class="form-grid" id="tint-fields" style="${isTintLike(x.service, x.kind) ? '' : 'display:none'}">
+      <div class="form-grid" id="tint-fields" style="${needFilm(x.service) ? '' : 'display:none'}">
         <div class="field"><label>${t('film')}</label>${filmSel(x.filmId || '', 'name="filmId"', films).replace('inp sm', 'inp')}</div>
         <div class="field" id="shade-field" style="${needShade(x.service, x.kind) ? '' : 'display:none'}"><label>${t('shade')}</label>${shadeSel(x.shade || '', 'name="shade"').replace('inp sm', 'inp')}</div>
       </div>
@@ -773,7 +782,7 @@ function editTaskSheet(id, isNew = false, jobId = null) {
 function saveTaskForm(form) {
   const fd = new FormData(form), id = form.dataset.id, jobId = form.dataset.job;
   const val = k => fd.get(k), ts = k => val(k) ? new Date(val(k)).getTime() : null;
-  const kind = hasKind(val('service')) ? (val('kind') || KIND_DEF[SVC[val('service')].g]) : undefined, tint = isTintLike(val('service'), kind);
+  const kind = hasKind(val('service')) ? (val('kind') || KIND_DEF[SVC[val('service')].g]) : undefined, tint = needFilm(val('service'));
   const base = { service: val('service'), kind, part: val('part'), workerIds: (val('workerIds') || '').split(',').filter(Boolean), filmId: tint ? val('filmId') || '' : '', shade: needShade(val('service'), kind) ? val('shade') || '' : '' };
   if (!id) {
     S.tasks.push({ id: uid(), jobId, ...base, start: null, end: null, rework: false });
@@ -934,7 +943,7 @@ const leadHead = () => `<div class="l-row head"><span>#</span><span></span><span
 function leadRow(w) {
   const wk = workerById(w.id);
   return `<a class="l-row r${w.rank}${w.low ? ' low' : ''}" href="#/worker/${w.id}"><span class="rk num">${w.rank}</span>${avatar(wk)}
-    <span class="nm"><b>${esc(wn(wk))}${w.low ? ` <span class="chip r low-chip">▼ ${t('lowRank')}</span>` : ''}</b><small class="muted num">${w.none ? t('noWorkP') : `${fN(w.tasks)} ${t('tasks')} · ${fN(+w.points.toFixed(1))} ${t('pts')}`}${w.edited ? ` · <span class="edited" title="${t('manualT')}">✎ ${w.edited}</span>` : ''}</small></span>
+    <span class="nm"><b>${esc(wn(wk))}${w.low ? ` <span class="chip r low-chip">▼ ${t('lowRank')}</span>` : ''}</b><small class="muted num">${w.none ? t('noWorkP') : w.team === 'polish' ? `${w.carsN} ${t('cars')} · ${fHrs(w.actual)} ${LANG === 'ar' ? 'س' : 'h'}` : `${fN(w.tasks)} ${t('tasks')} · ${fN(+w.points.toFixed(1))} ${t('pts')}`}${w.edited ? ` · <span class="edited" title="${t('manualT')}">✎ ${w.edited}</span>` : ''}</small></span>
     <span class="score"><b class="num" style="font-size:18px">${w.score}</b><span class="bar xm"><i style="width:${w.score}%"></i></span></span>
     <span class="c num">${w.carsN}</span><span class="c num">${fHrs(w.actual)}</span>
     <span class="c num xm ${w.eff >= 100 ? 'up' : 'down'}">${Math.round(w.eff)}%</span><span class="c num xh xm">${Math.round(w.util)}%</span>${ic('next', 'flip muted')}</a>`;
@@ -994,9 +1003,9 @@ function viewSettings() {
   if (setTab === 'films') body = Object.entries(FILM_TYPES).filter(([k]) => k === 'tint').map(([k, ft]) => `<div class="sec-h">${esc(nm(ft))}<span class="count num">${S.films.filter(f => f.type === k).length}</span><span class="grow"></span><button class="btn sm" data-act="edit-film" data-type="${k}">${ic('plus')}${t('addFilm')}</button></div>
     <div class="list">${S.films.filter(f => f.type === k).map(f => `<button class="l-item" data-act="edit-film" data-id="${f.id}" style="${f.active ? '' : 'opacity:.5'}"><div class="grow"><b>${esc(f.name)}</b><small>${f.active ? t('active') : t('inactive')}</small></div>${ic('edit')}</button>`).join('') || `<div class="muted">—</div>`}</div>`).join('');
   if (setTab === 'users') body = `<div class="sec-h" style="margin-top:0">${t('users')}<span class="grow"></span><button class="btn sm y" data-act="edit-user">${ic('plus')}${t('addUser')}</button></div>
-    <div class="list">${S.users.map(u => `<button class="l-item" data-act="edit-user" data-id="${u.id}" style="${u.active ? '' : 'opacity:.5'}"><span class="av sm" style="--c:${u.role === 'admin' ? '#FBBF15' : u.role === 'manager' ? '#5FB4FF' : '#2FD896'}">${esc(initials(un(u)))}</span><div class="grow"><b>${esc(un(u))}</b><small>${t(u.role)} · ${t(u.role === 'admin' ? 'roleAdminD' : u.role === 'manager' ? 'roleManagerD' : 'roleSupD')}</small></div>${u.active ? '' : `<span class="chip r">${t('inactive')}</span>`}${ic('edit')}</button>`).join('')}</div>`;
+    <div class="list">${S.users.map(u => `<button class="l-item" data-act="edit-user" data-id="${u.id}" style="${u.active ? '' : 'opacity:.5'}"><span class="av sm" style="--c:${u.role === 'admin' ? '#FBBF15' : u.role === 'manager' ? '#5FB4FF' : '#2FD896'}">${esc(initials(un(u)))}</span><div class="grow"><b>${esc(un(u))}</b><small>${esc(roleName(u))} · ${t(u.role === 'admin' ? 'roleAdminD' : u.role === 'manager' ? 'roleManagerD' : 'roleSupD')}</small></div>${u.active ? '' : `<span class="chip r">${t('inactive')}</span>`}${ic('edit')}</button>`).join('')}</div>`;
   if (setTab === 'general') { const st = S.settings, f = (k, key, type = 'text', ex = '') => `<div class="field"><label>${t(k)}</label><input class="inp" name="${key}" type="${type}" value="${esc(st[key] ?? '')}" ${ex}></div>`;
-    body = `<form class="card" data-form="settings"><div class="form-grid">${f('shop', 'shop')}${f('waNum', 'wa', 'tel', 'placeholder="9745xxxxxxx" dir="ltr"')}${f('emailTo', 'email', 'email', 'dir="ltr"')}${f('shiftHours', 'shiftHours', 'number', 'min="1" max="16" step="0.5"')}${f('autoLock', 'autoLock', 'number', 'min="1" max="240"')}</div>
+    body = `<form class="card" data-form="settings"><div class="form-grid">${f('shop', 'shop')}${f('waNum', 'wa', 'tel', 'placeholder="9745xxxxxxx" dir="ltr"')}${f('emailTo', 'email', 'email', 'dir="ltr"')}${f('shiftHours', 'shiftHours', 'number', 'min="1" max="16" step="0.5"')}${f('autoLock', 'autoLock', 'number', 'min="1" max="240"')}${f('breakStart', 'breakStart', 'time', 'dir="ltr"')}${f('breakEnd', 'breakEnd', 'time', 'dir="ltr"')}${f('breakWarn', 'breakWarn', 'number', 'min="1" max="30"')}</div>
       <div class="foot" style="display:flex;justify-content:flex-end;margin-top:18px"><button class="btn y">${ic('check')}${t('save')}</button></div></form>`; }
   if (setTab === 'data') body = `<div class="card"><div class="quick" style="margin:0">
       <button class="btn" data-act="backup">${ic('download')}${t('backup')}</button>
@@ -1141,7 +1150,8 @@ const ACTS = {
   pause: el => pauseTask(S.tasks.find(t => t.id === el.dataset.id)),
   resume: el => resumeTask(S.tasks.find(t => t.id === el.dataset.id)),
   'pause-all': () => { const list = S.tasks.filter(x => x.start && !x.end && !x.pausedAt); if (!list.length || !confirmBox(t('pauseAllQ', list.length))) return; list.forEach(x => pauseTask(x, true)); db.save(); toast(t('pausedToast')); refresh(); },
-  'resume-all': () => { const list = S.tasks.filter(x => x.pausedAt && !x.end && jobById(x.jobId)?.status === 'open'); if (!list.length || !confirmBox(t('resumeAllQ', list.length))) return; list.forEach(x => resumeTask(x, true)); db.save(); toast(t('started')); refresh(); },
+  'alert-close': () => { const el = document.getElementById('alert-bar'); if (el) el.innerHTML = ''; },
+  'resume-all': () => { const ab = document.getElementById('alert-bar'); if (ab) ab.innerHTML = ''; const list = S.tasks.filter(x => x.pausedAt && !x.end && jobById(x.jobId)?.status === 'open'); if (!list.length || !confirmBox(t('resumeAllQ', list.length))) return; list.forEach(x => resumeTask(x, true)); db.save(); toast(t('started')); refresh(); },
   'edit-task': el => { editTaskSheet(el.dataset.id); if (el.dataset.focus) { const i = $('.sheet [name=start]'); if (i) { i.scrollIntoView({ block: 'center' }); i.focus(); } } }, 'add-task': el => editTaskSheet(null, true, el.dataset.id),
   'pick-task-worker': el => { const f = el.closest('form'), set = new Set(f.workerIds.value.split(',').filter(Boolean)); set.has(el.dataset.id) ? set.delete(el.dataset.id) : set.add(el.dataset.id); f.workerIds.value = [...set].join(','); $('.pick', f).forEach(p => p.classList.toggle('on', set.has(p.dataset.id))); },
   'delete-task': el => { if (!confirmBox(t('delete') + '?')) return; S.tasks = S.tasks.filter(x => x.id !== el.dataset.id); db.save(); closeSheet(); render(); },
@@ -1163,7 +1173,7 @@ const ACTS = {
   'reset-all': () => { if (!confirmBox(t('resetConfirm'))) return; const keepUsers = S.users, settings = S.settings; S = { v: 1, demo: false, users: keepUsers, workers: [], films: seed().films, jobs: [], tasks: [], settings }; db.save(); render(); },
 };
 const CHANGES = {
-  'sel-other': el => { const k = el.dataset.key, o = $('#' + k + '-other'); if (el.value === '__other') { o.style.display = ''; o.value = ''; draft.car[k] = ''; o.focus(); } else { o.style.display = 'none'; draft.car[k] = el.value; } if (k === 'make') $('#models').innerHTML = modelOpts(draft.car.make); },
+  'sel-other': el => { const k = el.dataset.key, o = $('#' + k + '-other'); if (el.value === '__other') { o.style.display = ''; o.value = ''; draft.car[k] = ''; o.focus(); } else { o.style.display = 'none'; draft.car[k] = el.value; } if (k === 'make') { draft.car.model = ''; $('#model-wrap').innerHTML = modelField(); } },
   'tint-all-film': el => { draft.tintAll.film = el.value; Object.keys(draft.assign[draft.svc] || {}).forEach(p => (draft.tint[p] = draft.tint[p] || {}).film = el.value); renderAssign(); },
   'tint-all-shade': el => { draft.tintAll.shade = el.value; Object.keys(draft.assign[draft.svc] || {}).forEach(p => (draft.tint[p] = draft.tint[p] || {}).shade = el.value); renderAssign(); },
   'tint-film': el => { (draft.tint[el.dataset.part] = draft.tint[el.dataset.part] || {}).film = el.value; },
@@ -1181,11 +1191,12 @@ function taskFormSync(f) {
   $('#kind-field', f).style.display = ks.length ? '' : 'none';
   $('#shade-field', f).style.display = needShade(svc, kind) ? '' : 'none';
   $('#task-part', f).innerHTML = poolOf(svc, kind).map(p => `<option value="${p}">${esc(nm(PARTS[p]))}</option>`).join('');
-  $('#tint-fields', f).style.display = isTintLike(svc, kind) ? '' : 'none';
+  $('#tint-fields', f).style.display = needFilm(svc) ? '' : 'none';
 }
 const FORMS = {
+  'cloud-link': async f => { const b = f.querySelector('button'); b.disabled = true; const ok = await cloud.link(f.pw.value); if (!ok) { b.disabled = false; f.pw.value = ''; toast(LANG === 'ar' ? 'كلمة السر غير صحيحة' : 'Wrong password'); } },
   task: saveTaskForm,
-  settings: f => { const fd = new FormData(f); Object.assign(S.settings, { shop: fd.get('shop') || 'Insulator', wa: fd.get('wa'), email: fd.get('email'), shiftHours: +fd.get('shiftHours') || 9, autoLock: +fd.get('autoLock') || 10 }); db.save(); toast('✓ ' + t('save')); render(); },
+  settings: f => { const fd = new FormData(f); Object.assign(S.settings, { shop: fd.get('shop') || 'Insulator', wa: fd.get('wa'), email: fd.get('email'), shiftHours: +fd.get('shiftHours') || 9, autoLock: +fd.get('autoLock') || 10, breakStart: fd.get('breakStart') || '12:00', breakEnd: fd.get('breakEnd') || '16:00', breakWarn: +fd.get('breakWarn') || 5 }); db.save(); toast('✓ ' + t('save')); render(); },
   worker: f => { const fd = new FormData(f), id = f.dataset.id, data = { name: fd.get('name').trim(), nameEn: (fd.get('nameEn') || '').trim(), photo: fd.get('photo'), color: fd.get('color') || PALETTE[0], team: fd.get('team') || 'ppf', active: !!fd.get('active') };
     if (id) Object.assign(workerById(id), data); else S.workers.push({ id: uid(), ...data }); db.save(); closeSheet(); render(); },
   film: f => { const fd = new FormData(f), id = f.dataset.id, data = { name: fd.get('name').trim(), type: fd.get('type'), active: !!fd.get('active') };
@@ -1213,24 +1224,53 @@ document.addEventListener('input', e => {
 });
 document.addEventListener('submit', e => { const f = e.target.closest('[data-form]'); if (!f) return; e.preventDefault(); FORMS[f.dataset.form](f); });
 document.addEventListener('keydown', e => {
-  if (!me() && /^[0-9]$/.test(e.key)) pinPress(e.key);
-  if (!me() && e.key === 'Backspace') pinPress('del');
+  const typing = /INPUT|TEXTAREA|SELECT/.test(document.activeElement?.tagName || '');
+  if (!me() && !typing && /^[0-9]$/.test(e.key)) pinPress(e.key);
+  if (!me() && !typing && e.key === 'Backspace') pinPress('del');
   if (e.key === 'Escape') closeSheet();
 });
 window.addEventListener('hashchange', () => { closeSheet(); render(); });
 
+/* lunch break: warn the supervisor, pause running work automatically, remind to resume */
+const atHM = (str, def) => { const [h, m] = String(str || def).split(':').map(Number); const d = new Date(); d.setHours(h || 0, m || 0, 0, 0); return d.getTime(); };
+const brk = () => { const st = S.settings; return { on: st.breakOn !== false, b0: atHM(st.breakStart, '12:00'), b1: atHM(st.breakEnd, '16:00'), warn: +st.breakWarn || 5 }; };
+const seen = {};
+function beep() { try { const a = new (window.AudioContext || window.webkitAudioContext)(), o = a.createOscillator(), g = a.createGain(); o.connect(g); g.connect(a.destination); o.frequency.value = 880; g.gain.value = .15; o.start(); o.stop(a.currentTime + .35); setTimeout(() => { const o2 = a.createOscillator(); o2.connect(g); o2.frequency.value = 660; o2.start(); o2.stop(a.currentTime + .35); }, 420); } catch { } }
+function alertUser(text, btn) {
+  let el = document.getElementById('alert-bar'); if (!el) { el = document.createElement('div'); el.id = 'alert-bar'; document.body.appendChild(el); }
+  el.innerHTML = `<div class="alert-bar">${ic('clock')}<span>${text}</span>${btn || ''}<button class="btn sm ghost" data-act="alert-close">${ic('x')}</button></div>`;
+  beep(); try { navigator.vibrate && navigator.vibrate([300, 150, 300]); } catch { }
+  try { if ('Notification' in window && Notification.permission === 'granted') new Notification('Insulator', { body: text.replace(/<[^>]+>/g, ''), icon: 'icon-512.png' }); } catch { }
+}
+function breakCheck() {
+  if (!S || (window.cloud && !cloud.linked)) return;
+  const B = brk(), now = Date.now(), day = new Date().toDateString(); if (!B.on || new Date().getDay() === 5) return; // Friday: off
+  const open = x => jobById(x.jobId)?.status === 'open';
+  // at break time pause everything still running — also catches up if no phone was open at 12:00
+  if (now >= B.b0) {
+    let n = 0; S.tasks.forEach(x => { if (x.start && !x.end && !x.pausedAt && x.start < B.b0 && x.autoBreak !== day && open(x)) { x.pausedAt = B.b0; x.autoBreak = day; n++; } });
+    if (n) { db.save(); refresh(); if (canEdit() && seen.p !== day) { seen.p = day; alertUser(t('breakPaused', n, S.settings.breakEnd || '16:00')); } }
+  }
+  if (!me() || !canEdit()) return;
+  const running = S.tasks.filter(x => x.start && !x.end && !x.pausedAt && open(x)).length;
+  if (now >= B.b0 - B.warn * 60000 && now < B.b0 && running && seen.w !== day) { seen.w = day; alertUser(t('breakSoon', Math.max(1, Math.ceil((B.b0 - now) / 60000)), running)); }
+  const waiting = S.tasks.filter(x => x.pausedAt && !x.end && x.autoBreak === day && open(x)).length;
+  if (now >= B.b1 && now < B.b1 + 3 * 3600000 && waiting && seen.r !== day) { seen.r = day; alertUser(t('breakOver', waiting), `<button class="btn sm g" data-act="resume-all">${ic('play')}${t('resumeAll')}</button>`); }
+}
+
 /* live timers + auto-lock */
-let lastAct = Date.now();
+let lastAct = Date.now(), tickN = 0;
 ['pointerdown', 'keydown', 'touchstart'].forEach(ev => document.addEventListener(ev, () => lastAct = Date.now(), { passive: true }));
 function tick() { const now = Date.now(); $$('[data-since]').forEach(el => el.textContent = fClock(now - +el.dataset.since)); }
 setInterval(() => {
   tick();
+  if (++tickN % 15 === 1) breakCheck();
   if (me() && Date.now() - lastAct > (+S.settings.autoLock || 10) * 60000) logout();
 }, 1000);
 window.addEventListener('storage', e => { if (e.key === STORE_KEY) { db.load(); render(); } }); // keep several tabs in sync
 
 /* boot */
 db.load();
-render();
+if (window.cloud) { document.getElementById('sync-dot')?.removeAttribute('hidden'); cloud.start(); } else render();
 // Offline cache (sw.js) is switched off for now: it blocked updates in some browsers. Remove any old one.
 if ('serviceWorker' in navigator) navigator.serviceWorker.getRegistrations().then(rs => rs.forEach(r => r.unregister())).catch(() => { });
