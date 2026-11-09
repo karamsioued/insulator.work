@@ -169,7 +169,7 @@ const T = {
     ranking: 'ترتيب الإنتاجية', score: 'التقييم', cars: 'سيارات', hours: 'ساعات', eff: 'الكفاءة', util: 'الاستغلال', avgCar: 'متوسط/سيارة',
     daily: 'العمل اليومي (ساعات)', svcMix: 'توزيع الخدمات', partTimes: 'متوسط وقت كل قطعة', avg: 'المتوسط', best: 'الأسرع', count: 'العدد',
     how: 'كيف يُحسب التقييم؟',
-    howTxt: '<b>الترتيب</b> يحسب القطع المنتهية فقط. القطعة الجارية تدخل عند الإنهاء، والعمال اللي اشتغلوا مع بعض على نفس القطع ياخذون نفس التقييم ونفس المركز. اللي ما أنهى أي قطعة بعد يظهر بـ «—».<br><br><b>الوقت</b> = وقت العمل الفعلي فقط — فترات الإيقاف المؤقت (نهاية الدوام، الاستراحة) لا تُحسب.<br><b>النقاط (حجم العمل)</b> = كل قطعة لها درجة صعوبة: الصدام الأمامي 3، الصدام الخلفي 2.5، الكبوت والسقف 2، الرفرف الخلفي 1.5، الباب 1، المراية 0.6 — وتغيير اللون ×1.5. <b>القطعة المشتركة تنقسم</b>: عاملين على الصدام = 1.5 نقطة لكل واحد، يعني ما تنحسب مثل اللي اشتغل لحاله.<br><b>الكفاءة</b> = الوقت المعتاد للفريق لنفس القطع ÷ الوقت الفعلي للعامل. 100% تعني سرعة الفريق المعتادة، وأكثر من 100% أسرع.<br><b>التقييم (0–100)</b> = 55% النقاط + 45% الكفاءة − 4 نقاط لكل إعادة عمل.<br><b>الاستغلال</b> = ساعات العمل الفعلية ÷ ساعات الدوام في الفترة.',
+    howTxt: '<b>الترتيب</b> يحسب القطع المنتهية فقط. القطعة الجارية تدخل عند الإنهاء. <b>القطعة المشتركة</b> تُحسب كنتيجة فريق واحد: كل عامل عليها ياخذ نفس الحصة من النقاط ونفس متوسط وقت الفريق، فاللي اشتغلوا نفس الشغل مع بعض ياخذون نفس التقييم حتى لو عداد واحد منهم اشتغل أطول. <b>الكفاءة</b> تميل لـ 100% لما تكون القطع قليلة وتتوضح كل ما زاد الشغل، والعلامة الحمراء ما تظهر إلا بعد ما يكون عند كل عامل تقريباً 3 قطع. اللي ما أنهى أي قطعة بعد يظهر بـ «—».<br><br><b>الوقت</b> = وقت العمل الفعلي فقط — فترات الإيقاف المؤقت (نهاية الدوام، الاستراحة) لا تُحسب.<br><b>النقاط (حجم العمل)</b> = كل قطعة لها درجة صعوبة: الصدام الأمامي 3، الصدام الخلفي 2.5، الكبوت والسقف 2، الرفرف الخلفي 1.5، الباب 1، المراية 0.6 — وتغيير اللون ×1.5. <b>القطعة المشتركة تنقسم</b>: عاملين على الصدام = 1.5 نقطة لكل واحد، يعني ما تنحسب مثل اللي اشتغل لحاله.<br><b>الكفاءة</b> = الوقت المعتاد للفريق لنفس القطع ÷ الوقت الفعلي للعامل. 100% تعني سرعة الفريق المعتادة، وأكثر من 100% أسرع.<br><b>التقييم (0–100)</b> = 55% النقاط + 45% الكفاءة − 4 نقاط لكل إعادة عمل.<br><b>الاستغلال</b> = ساعات العمل الفعلية ÷ ساعات الدوام في الفترة.',
     noData: 'لا توجد بيانات في هذه الفترة', pdf: 'PDF', excel: 'Excel', share: 'مشاركة', whatsapp: 'واتساب', email: 'إيميل',
     preparing: 'جارٍ تجهيز التقرير…', downloaded: 'تم تنزيل الملف', report: 'تقرير الإنتاجية', period: 'الفترة', generated: 'أُنشئ في',
     demoNote: 'هذه بيانات تجريبية للعرض فقط.', clearDemo: 'مسح البيانات التجريبية', loadDemo: 'تحميل بيانات تجريبية للعرض', loadDemoQ: 'إضافة بيانات تجريبية لشهرين (للعرض فقط)؟ تظهر على كل الأجهزة المربوطة، وتقدر تمسحها بزر «مسح البيانات التجريبية» بدون ما تتأثر بياناتك الحقيقية.',
@@ -212,7 +212,7 @@ const T = {
     ranking: 'Productivity ranking', score: 'Score', cars: 'Cars', hours: 'Hours', eff: 'Efficiency', util: 'Utilization', avgCar: 'Avg/car',
     daily: 'Daily work (hours)', svcMix: 'Service mix', partTimes: 'Average time per panel', avg: 'Average', best: 'Fastest', count: 'Count',
     how: 'How is the score calculated?',
-    howTxt: '<b>Ranking</b> counts finished panels only. A running panel counts once it is finished; workers who did the same panels together get the same score and the same place. Workers with nothing finished yet show «—».<br><br><b>Time</b> = actual working time only — paused periods (end of shift, breaks) are not counted.<br><b>Points (workload)</b> = each panel has a difficulty: front bumper 3, rear bumper 2.5, hood and roof 2, rear quarter 1.5, door 1, mirror 0.6 — colour change ×1.5. <b>Shared panels are split</b>: two workers on a bumper = 1.5 points each, so it never counts like working alone.<br><b>Efficiency</b> = the team’s usual time for the same panels ÷ the worker’s actual time. 100% = team pace, above 100% = faster.<br><b>Score (0–100)</b> = 55% points + 45% efficiency − 4 points per rework.<br><b>Utilization</b> = actual working hours ÷ shift hours in the period.',
+    howTxt: '<b>Ranking</b> counts finished panels only. A running panel counts once it is finished. A <b>shared panel</b> is one team result: every worker on it gets the same share of points and the team\'s average time, so workers who did the same work together get the same score even if one timer ran longer. <b>Efficiency</b> leans toward 100% while there are only a few panels and sharpens as work adds up; red marks appear only once each worker has about 3 panels. Workers with nothing finished yet show «—».<br><br><b>Time</b> = actual working time only — paused periods (end of shift, breaks) are not counted.<br><b>Points (workload)</b> = each panel has a difficulty: front bumper 3, rear bumper 2.5, hood and roof 2, rear quarter 1.5, door 1, mirror 0.6 — colour change ×1.5. <b>Shared panels are split</b>: two workers on a bumper = 1.5 points each, so it never counts like working alone.<br><b>Efficiency</b> = the team’s usual time for the same panels ÷ the worker’s actual time. 100% = team pace, above 100% = faster.<br><b>Score (0–100)</b> = 55% points + 45% efficiency − 4 points per rework.<br><b>Utilization</b> = actual working hours ÷ shift hours in the period.',
     noData: 'No data for this period', pdf: 'PDF', excel: 'Excel', share: 'Share', whatsapp: 'WhatsApp', email: 'Email',
     preparing: 'Preparing the report…', downloaded: 'File downloaded', report: 'Productivity report', period: 'Period', generated: 'Generated',
     demoNote: 'This is demo data for preview only.', clearDemo: 'Clear demo data', loadDemo: 'Load demo data for a presentation', loadDemoQ: 'Add two months of demo data (for presenting only)? It shows on all linked devices; remove it any time with “Clear demo data” — your real data is not touched.',
@@ -931,16 +931,20 @@ function periodLabel(p = P) {
   return new Date(from).toLocaleDateString(loc(), o) + ' – ' + new Date(addDays(to, -1)).toLocaleDateString(loc(), o);
 }
 function workdaysIn(from, to) { let n = 0; const end = Math.min(to, startOfDay(Date.now()) + DAY); for (let d = from; d < end; d = addDays(d, 1)) if (new Date(d).getDay() !== 5) n++; return n; }
+const EFF_K = 1.5 * 3600000;
 function analyze(from, to) {
   const tasks = S.tasks.filter(x => x.start && x.end && dur(x) > 0 && x.start >= from && x.start < to);
   // team baseline: median duration per (service group, panel) using all history — stable reference
-  const hist = {}; S.tasks.forEach(x => { if (x.start && x.end && dur(x) > 0) (hist[svcGroupKey(x)] = hist[svcGroupKey(x)] || []).push(lab(x)); });
+  // a shared panel is ONE team result: every worker on it gets the team's average time, so the same work gives the same score
+  const gT = {}; S.tasks.forEach(x => { if (x.grp && x.start && x.end && dur(x) > 0) { const g = gT[x.grp] = gT[x.grp] || { s: 0, n: 0 }; g.s += dur(x); g.n++; } });
+  const tDur = x => x.grp && gT[x.grp] ? gT[x.grp].s / gT[x.grp].n : dur(x);
+  const hist = {}, seenG = new Set(); S.tasks.forEach(x => { if (!(x.start && x.end && dur(x) > 0)) return; if (x.grp) { if (seenG.has(x.grp)) return; seenG.add(x.grp); } (hist[svcGroupKey(x)] = hist[svcGroupKey(x)] || []).push(tDur(x) * shareOf(x)); });
   const base = {}; for (const k in hist) base[k] = median(hist[k]);
   const jobsIn = S.jobs.filter(j => j.createdAt >= from && j.createdAt < to);
   const W = {};
   tasks.forEach(x => {
     const ids = wids(x).filter(workerById); if (!ids.length) return;
-    const d = dur(x), n = Math.max(ids.length, x.share || 1), k = svcGroupKey(x);
+    const d = tDur(x), n = Math.max(ids.length, x.share || 1), k = svcGroupKey(x);
     ids.forEach(id => {
       const w = W[id] = W[id] || { id, tasks: 0, points: 0, solo: 0, shared: 0, cars: new Set(), actual: 0, expected: 0, rework: 0, parts: {}, days: {} };
       w.tasks += 1 / n; w.points += ptsOf(x) / n; n > 1 ? w.shared++ : w.solo++; w.cars.add(x.jobId); w.actual += d; w.expected += base[k] ? base[k] / n : d; if (x.rework) w.rework++; if (x.edited) w.edited = (w.edited || 0) + 1;
@@ -954,7 +958,9 @@ function analyze(from, to) {
   const TK = Object.keys(TEAMS), maxPt = {};
   list.forEach(w => { w.team = teamOf(workerById(w.id)); maxPt[w.team] = Math.max(maxPt[w.team] || 1, w.points); });
   list.forEach(w => { const maxPts = maxPt[w.team];
-    w.eff = w.actual ? w.expected / w.actual * 100 : 0;
+    // few panels = little evidence: efficiency is pulled toward 100% until there is enough work (EFF_K of normal time), so one timer can't decide the ranking
+    w.effRaw = w.actual ? w.expected / w.actual * 100 : 0;
+    w.eff = w.actual ? (w.expected + EFF_K) / (w.actual + EFF_K) * 100 : 0;
     w.util = wd ? w.actual / (wd * shift) * 100 : 0;
     w.vol = w.points / maxPts * 100;
     w.score = Math.round(clamp(.55 * w.vol + .45 * (Math.min(w.eff, 150) / 150 * 100) - 4 * w.rework, 0, 100));
@@ -964,7 +970,8 @@ function analyze(from, to) {
   const teams = TK.map(k => [k, list.filter(w => w.team === k)]).filter(([, l]) => l.length);
   // equal score = equal rank (two workers on the same panels get the same place); nothing finished yet = no rank
   teams.forEach(([, l]) => { const ranked = l.filter(w => !w.none); l.forEach(w => { w.of = ranked.length; w.rank = w.none ? '—' : 1 + ranked.filter(o => o.score > w.score).length; });
-    const lowCut = ranked.length > 3 ? ranked[ranked.length - 3].score : -1; ranked.forEach(w => { w.low = w.score <= lowCut && w.rank > 3; }); });
+    const enough = ranked.length > 3 && ranked.reduce((a, w) => a + w.tasks, 0) / ranked.length >= 3; // red marks only once everyone has ~3+ panels
+    const lowCut = enough ? ranked[ranked.length - 3].score : -1; ranked.forEach(w => { w.low = w.score <= lowCut && w.rank > 3; }); });
   // KPIs
   const labor = tasks.reduce((a, x) => a + lab(x), 0);
   const carsWithWork = new Set(tasks.map(x => x.jobId));
