@@ -82,8 +82,9 @@ window.cloud = (() => {
       if (error) throw error;
       rows.push(...data); if (data.length < 1000) break; from += 1000;
     }
-    if (!rows.length) { synced = new Map(); return push(); } // empty cloud: this device's data becomes the shared copy
-    build(rows); await push(); setStatus('ok');
+    if (!rows.length) { synced = new Map(); await push(); return false; } // empty cloud: this device's data becomes the shared copy
+    const before = hash(canon(S)); build(rows); await push(); setStatus('ok');
+    return hash(canon(S)) !== before; // redraw only when something actually changed
   }
 
   // a change made on another device
@@ -99,8 +100,9 @@ window.cloud = (() => {
       if (row.kind === 'meta') Object.assign(S, row.data);
       else if (ARR[row.kind]) { const a = S[ARR[row.kind]], i = a.findIndex(x => x.id === row.id); if (i >= 0) a[i] = row.data; else a.push(row.data); }
     }
-    saveLocal(); saveSynced(); redraw();
+    clearTimeout(liveT); liveT = setTimeout(() => { saveLocal(); saveSynced(); redraw(); }, 150); // a car with 15 parts arrives as 16 rows: draw once
   }
+  let liveT = null;
   // don't yank the screen while someone is typing or has a form open
   const busyUI = () => !!document.querySelector('.sheet') || (typeof route === 'function' && route().name === 'new') || /INPUT|TEXTAREA|SELECT/.test(document.activeElement?.tagName || '');
   function redraw() { if (busyUI()) { deferred = true; return; } deferred = false; if (typeof refresh === 'function' && me()) refresh(); else render(); }
@@ -113,10 +115,10 @@ window.cloud = (() => {
     sb.channel('records-live').on('postgres_changes', { event: '*', schema: 'public', table: 'records' }, onChange)
       .subscribe(st => { if (st === 'SUBSCRIBED') setStatus('ok'); else if (st === 'CHANNEL_ERROR' || st === 'TIMED_OUT' || st === 'CLOSED') setStatus('off'); });
     // phones sleep and drop the live connection: catch up when the app comes back
-    const catchUp = () => { if (document.visibilityState === 'visible') pull().then(() => redraw()).catch(() => setStatus('off')); };
+    const catchUp = () => { if (document.visibilityState === 'visible') pull().then(ch => ch && redraw()).catch(() => setStatus('off')); };
     document.addEventListener('visibilitychange', catchUp);
     window.addEventListener('online', catchUp);
-    setInterval(() => { if (document.visibilityState === 'visible') pull().then(() => redraw()).catch(() => setStatus('off')); }, 60000);
+    setInterval(() => { if (document.visibilityState === 'visible') pull().then(ch => ch && redraw()).catch(() => setStatus('off')); }, 60000);
   }
   async function start() {
     const { data } = await sb.auth.getSession();
