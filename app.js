@@ -1198,7 +1198,7 @@ const ACTS = {
   'alert-close': () => { const el = document.getElementById('alert-bar'); if (el) el.innerHTML = ''; },
   'resume-all': () => { const ab = document.getElementById('alert-bar'); if (ab) ab.innerHTML = ''; const list = S.tasks.filter(x => x.pausedAt && !x.end && jobById(x.jobId)?.status === 'open'); if (!list.length || !confirmBox(t('resumeAllQ', list.length))) return; list.forEach(x => resumeTask(x, true)); db.save(); toast(t('started')); refresh(); },
   'edit-task': el => { editTaskSheet(el.dataset.id); if (el.dataset.focus) { const i = $('.sheet [name=start]'); if (i) { i.scrollIntoView({ block: 'center' }); i.focus(); } } }, 'add-task': el => editTaskSheet(null, true, el.dataset.id),
-  'pick-task-worker': el => { const f = el.closest('form'), set = new Set(f.workerIds.value.split(',').filter(Boolean)); set.has(el.dataset.id) ? set.delete(el.dataset.id) : set.add(el.dataset.id); f.workerIds.value = [...set].join(','); $('.pick', f).forEach(p => p.classList.toggle('on', set.has(p.dataset.id))); },
+  'pick-task-worker': el => { const f = el.closest('form'), set = new Set(f.workerIds.value.split(',').filter(Boolean)); set.has(el.dataset.id) ? set.delete(el.dataset.id) : set.add(el.dataset.id); f.workerIds.value = [...set].join(','); $$('.pick', f).forEach(p => p.classList.toggle('on', set.has(p.dataset.id))); },
   'delete-task': el => { if (!confirmBox(t('delete') + '?')) return; const x = S.tasks.find(t => t.id === el.dataset.id); S.tasks = S.tasks.filter(t => t.id !== el.dataset.id);
     if (x && x.grp) { const rest = S.tasks.filter(t => t.grp === x.grp); rest.forEach(m => { if (rest.length > 1) m.share = rest.length; else { delete m.grp; delete m.share; } }); }
     db.save(); closeSheet(); render(); },
