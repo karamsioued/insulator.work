@@ -527,3 +527,27 @@ html{touch-action:manipulation}
 .fu-opt.g.on{background:var(--green);border-color:var(--green)}.fu-opt.r.on{background:#ff6b6b;border-color:#ff6b6b}
 .fu-done.declined{color:#ff8a8a}.fu-done.declined svg{stroke:#ff8a8a}
 .fu-done.booked{color:var(--yellow)}.fu-done.booked svg{stroke:var(--yellow)}
+/* v43: tappable KPI tiles + detail sheets */
+button.kpi.tap{font:inherit;color:inherit;text-align:start;cursor:pointer;width:100%}
+.kpi.tap:active{transform:scale(.98)}
+.kpi-more{position:absolute;inset-inline-end:14px;bottom:10px;font-style:normal;font-size:11.5px;color:var(--yellow);opacity:.85}
+.sheet-jobs{display:grid;gap:10px}
+.dk-row{display:flex;align-items:center;gap:12px;padding:10px 4px;border-bottom:1px solid var(--line)}
+.dk-row .rk{width:22px;text-align:center;font-weight:800;color:var(--muted)}
+.dk-row.r1 .rk{color:var(--yellow)}
+.dk-row .nm{flex:1;min-width:0;display:flex;flex-direction:column}
+.dk-row .nm small{font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.dk-n{font-size:20px;color:var(--yellow)}
+.avg-svc{border:1px solid var(--line);border-radius:14px;margin-bottom:10px;overflow:hidden}
+.avg-svc summary{display:flex;align-items:center;gap:12px;padding:12px 14px;cursor:pointer;list-style:none}
+.avg-svc summary::-webkit-details-marker{display:none}
+.avg-svc .ic{display:grid;place-items:center;width:34px;height:34px;border-radius:10px;background:rgba(251,191,21,.12);color:var(--yellow);flex:none}
+.avg-svc .nm{flex:1;min-width:0;display:flex;flex-direction:column}
+.avg-svc .nm small{font-size:12px}
+.avg-v{font-size:18px;color:var(--yellow);white-space:nowrap}
+.avg-car{display:flex;align-items:center;gap:10px;padding:9px 14px;border-top:1px solid var(--line);color:inherit;text-decoration:none}
+.avg-car .nm small{font-size:11.5px}
+.avg-car b{white-space:nowrap}
+.avg-car .ac-t{display:flex;align-items:center;gap:6px;flex-wrap:wrap;font-weight:600;font-size:13.5px}
+.avg-car .plate{font-size:11px;padding:1px 6px}
+.avg-car .avs .av{width:24px;height:24px}
