@@ -64,15 +64,21 @@ const PARTS = {
   win_rr: { ar: 'شباك الباب الثاني يمين', en: 'Rear window (R)', g: 'glass' },
   rear_glass: { ar: 'الزجاج الخلفي', en: 'Rear glass', g: 'glass' },
   sunroof: { ar: 'فتحة السقف', en: 'Sunroof', g: 'glass' },
+  rim_fl: { ar: 'الرنج الأمامي يسار', en: 'Front rim (L)', g: 'rim' },
+  rim_fr: { ar: 'الرنج الأمامي يمين', en: 'Front rim (R)', g: 'rim' },
+  rim_rl: { ar: 'الرنج الخلفي يسار', en: 'Rear rim (L)', g: 'rim' },
+  rim_rr: { ar: 'الرنج الخلفي يمين', en: 'Rear rim (R)', g: 'rim' },
   whole: { ar: 'السيارة كاملة', en: 'Whole car', g: 'whole' },
 };
 const BODY = Object.keys(PARTS).filter(k => PARTS[k].g === 'body');
+const RIMS = Object.keys(PARTS).filter(k => PARTS[k].g === 'rim');
 const GLASS = Object.keys(PARTS).filter(k => PARTS[k].g === 'glass');
 const SERVICES = [
   { k: 'full_ppf', g: 'ppf', ar: 'حماية كاملة', en: 'Full PPF', parts: BODY },
   { k: 'half_ppf', g: 'ppf', ar: 'نصف حماية', en: 'Half PPF', parts: ['fbumper', 'hood', 'fender_l', 'fender_r'] }, // front bumper + full hood + both front fenders
   { k: 'quarter_ppf', g: 'ppf', ar: 'ربع حماية', en: 'Quarter PPF', parts: ['fbumper', 'hood', 'fender_l', 'fender_r'] }, // front bumper + half the hood + half of each front fender
   { k: 'color_change', g: 'wrap', ar: 'تغيير لون', en: 'Color change', parts: BODY },
+  { k: 'rims_ppf', g: 'rim', ar: 'حماية الرينجات', en: 'Rim PPF', parts: ['rim_fl', 'rim_fr', 'rim_rl', 'rim_rr'] }, // separate: can go with full / half / quarter
   { k: 'tint', g: 'tint', ar: 'عازل حراري', en: 'Window tint', parts: ['windshield', 'rear_glass', 'win_fl', 'win_fr', 'win_rl', 'win_rr'] },
   { k: 'ceramic', g: 'cer', ar: 'نانو سيراميك', en: 'Ceramic coating', parts: ['whole'] },
   { k: 'polish', g: 'pol', ar: 'بوليش', en: 'Polish', parts: ['whole'] },
@@ -87,7 +93,7 @@ const SERVICES = [
 const SVC = Object.fromEntries(SERVICES.map(s => [s.k, s]));
 // how the new-car page groups the services
 const SVC_CATS = [
-  { k: 'ppf', ic: 'shield', ar: 'الحماية', en: 'PPF', svcs: ['full_ppf', 'half_ppf', 'quarter_ppf', 'color_change'], hint: { ar: 'خيار واحد فقط', en: 'one only' } },
+  { k: 'ppf', ic: 'shield', ar: 'الحماية', en: 'PPF', svcs: ['full_ppf', 'half_ppf', 'quarter_ppf', 'color_change', 'rims_ppf'], hint: { ar: 'نوع حماية واحد — والرينجات تنضاف معه', en: 'one PPF type — rims can be added' } },
   { k: 'tint', ic: 'sun', ar: 'العازل الحراري', en: 'Tint', svcs: ['tint', 'tint_off', 'windshield', 'windshield_off'] },
   { k: 'pol', ic: 'spark', ar: 'البوليش', en: 'Polish', svcs: ['polish', 'ceramic', 'clean'] },
   { k: 'rep', ic: 'swap', ar: 'تغيير القطع', en: 'Panel replacement', svcs: ['replace'] },
@@ -95,7 +101,7 @@ const SVC_CATS = [
 ];
 const FILM_TYPES = { ppf: { ar: 'حماية PPF', en: 'PPF film' }, tint: { ar: 'عازل حراري', en: 'Window film' }, wrap: { ar: 'تغيير لون', en: 'Color wrap' }, cer: { ar: 'سيراميك', en: 'Ceramic' } };
 // kind = 'ppf' | 'tint' — only used by "panel replacement", where the supervisor picks which one first
-const poolOf = (svc, kind) => { const g = SVC[svc].g; return (g === 'tint' || g === 'tintx') ? GLASS : (g === 'jam' || g === 'jamx') ? ['windshield'] : g === 'rep' ? (kind === 'tint' ? GLASS : BODY) : (g === 'cer' || g === 'pol' || g === 'cln' || g === 'srv' || g === 'chk') ? ['whole'] : BODY; };
+const poolOf = (svc, kind) => { const g = SVC[svc].g; return g === 'rim' ? RIMS : (g === 'tint' || g === 'tintx') ? GLASS : (g === 'jam' || g === 'jamx') ? ['windshield'] : g === 'rep' ? (kind === 'tint' ? GLASS : BODY) : (g === 'cer' || g === 'pol' || g === 'cln' || g === 'srv' || g === 'chk') ? ['whole'] : BODY; };
 const isTintLike = (svc, kind) => { const g = SVC[svc].g; return g === 'tint' || g === 'tintx' || g === 'jam' || g === 'jamx' || (g === 'rep' && kind === 'tint'); };
 // services with a sub-type picked first: panel replacement (tint/PPF) and polish (exterior/interior/both)
 const KINDS = { rep: ['tint', 'ppf'], pol: ['ext', 'int', 'both'] };
@@ -105,14 +111,14 @@ const kindLabel = k => t({ tint: 'replTint', ppf: 'replPpf', ext: 'polExt', int:
 const needShade = () => false; // owner: tint needs neither shade nor film
 const needFilm = svc => SVC[svc].g === 'jam'; // the windshield service only needs the film type
 const dKind = svc => (draft && draft.kind && draft.kind[svc]) || KIND_DEF[SVC[svc].g] || 'ppf';
-const SVC_TEAM = svc => ['jamx', 'tintx'].includes(SVC[svc].g) ? 'all' : ['cer', 'pol', 'cln'].includes(SVC[svc].g) ? 'polish' : 'ppf';
+const SVC_TEAM = svc => ['jamx', 'tintx', 'srv'].includes(SVC[svc].g) ? 'all' : ['cer', 'pol', 'cln'].includes(SVC[svc].g) ? 'polish' : 'ppf';
 const inTeam = (w, team) => team === 'all' || teamOf(w) === team;
 const PALETTE = ['#FBBF15', '#5FB4FF', '#2FD896', '#FF7A59', '#B98CFF', '#FF5D9E', '#6FE3D0', '#F2E863', '#9DB4FF', '#FFA94D'];
 // Brands ordered by how common they are on Qatar roads; models list Qatar trims. Anything else → "Other".
 const MODELS = {
-  'Toyota': ['Land Cruiser GXR', 'Land Cruiser VXR', 'Land Cruiser GR Sport', 'Land Cruiser GX', 'Land Cruiser 70', 'Prado', 'Fortuner', 'Hilux', 'Camry', 'Corolla', 'Yaris', 'RAV4', 'Sequoia', 'Tundra', 'Highlander', 'Crown', 'Supra', 'Rush', 'Hiace', 'Granvia'],
+  'Toyota': ['Land Cruiser GXR', 'Land Cruiser VXR', 'Land Cruiser VX', 'Land Cruiser GR Sport', 'Land Cruiser GX', 'Land Cruiser 70', 'Prado', 'Fortuner', 'Hilux', 'Camry', 'Corolla', 'Yaris', 'RAV4', 'Sequoia', 'Tundra', 'Highlander', 'Crown', 'Supra', 'Rush', 'Hiace', 'Granvia'],
   'Nissan': ['Patrol LE Platinum', 'Patrol LE Titanium', 'Patrol SE', 'Patrol XE', 'Patrol Nismo', 'Patrol Safari', 'Altima', 'Sunny', 'X-Trail', 'Pathfinder', 'Kicks', 'Navara', 'Z'],
-  'Lexus': ['LX 600', 'LX 500d', 'GX 550', 'GX 460', 'ES', 'LS', 'RX', 'NX', 'UX', 'IS', 'LC', 'LM', 'TX'],
+  'Lexus': ['LX 600', 'LX 600 F Sport', 'LX 500d', 'GX 550', 'GX 460', 'ES', 'LS', 'RX', 'NX', 'UX', 'IS', 'LC', 'LM', 'TX'],
   'Land Rover': ['Range Rover', 'Range Rover Sport', 'Range Rover Velar', 'Range Rover Evoque', 'Defender 90', 'Defender 110', 'Defender 130', 'Discovery', 'Discovery Sport'],
   'Mercedes-Benz': ['G 63 AMG', 'G 500', 'S-Class', 'Maybach S 580', 'E-Class', 'C-Class', 'GLE', 'GLS', 'Maybach GLS', 'GLC', 'CLE', 'AMG GT', 'V-Class', 'EQS'],
   'GMC': ['Yukon', 'Yukon Denali', 'Yukon XL', 'Sierra', 'Sierra Denali', 'Acadia', 'Terrain', 'Hummer EV'],
@@ -381,7 +387,7 @@ const jobById = id => S.jobs.find(j => j.id === id);
 const tasksOf = jobId => S.tasks.filter(t => t.jobId === jobId);
 const wColor = w => w ? (w.color || PALETTE[S.workers.indexOf(w) % PALETTE.length]) : '#5d6a8c';
 // How hard each panel is (a door = 1). Used for workload points; a shared panel's points are split between its workers.
-const DIFFICULTY = { fbumper: 3.5, rbumper: 3.2, quarter_l: 1.7, quarter_r: 1.7, roof: 1.6, hood: 1.2, trunk: 1.1, fender_l: 1.1, fender_r: 1.1, door_fl: 1, door_fr: 1, door_rl: 1, door_rr: 1, mirror_l: .6, mirror_r: .6,
+const DIFFICULTY = { rim_fl: .8, rim_fr: .8, rim_rl: .8, rim_rr: .8, fbumper: 3.5, rbumper: 3.2, quarter_l: 1.7, quarter_r: 1.7, roof: 1.6, hood: 1.2, trunk: 1.1, fender_l: 1.1, fender_r: 1.1, door_fl: 1, door_fr: 1, door_rl: 1, door_rr: 1, mirror_l: .6, mirror_r: .6,
   windshield: 1.6, rear_glass: 1, win_fl: .5, win_fr: .5, win_rl: .5, win_rr: .5, sunroof: .6, whole: 4 };
 // in a quarter PPF only half the hood and half of each front fender are covered (the bumper is full)
 const QUARTER_HALF = ['hood', 'fender_l', 'fender_r'];
@@ -427,6 +433,7 @@ function supCanSeeJob(j) { return j.status === 'open' || (j.closedAt && j.closed
 
 /* ---------------- icons ---------------- */
 const IC = {
+  wheel: '<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="3"/><path d="M12 3v6M12 15v6M3 12h6M15 12h6"/>',
   calendar: '<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/>',
   floor: '<path d="M3 12h4l3 8 4-16 3 8h4"/>', plus: '<path d="M12 5v14M5 12h14"/>', chart: '<path d="M3 3v18h18"/><path d="M7 15l4-4 3 3 5-6"/>',
   history: '<path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/><path d="M12 7v5l3 2"/>',
@@ -454,7 +461,7 @@ const IC = {
   pause: '<rect x="7" y="5" width="3.5" height="14" rx="1" fill="currentColor"/><rect x="13.5" y="5" width="3.5" height="14" rx="1" fill="currentColor"/>',
   info: '<circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/>', x: '<path d="M6 6l12 12M18 6L6 18"/>',
 };
-const SVC_IC = { full_ppf: 'shield', half_ppf: 'half', quarter_ppf: 'quarter', color_change: 'palette', tint: 'sun', ceramic: 'drop', polish: 'spark', clean: 'clean', service: 'clock', checkup: 'check', windshield: 'glass', windshield_off: 'glass', tint_off: 'sun', replace: 'swap' };
+const SVC_IC = { full_ppf: 'shield', half_ppf: 'half', quarter_ppf: 'quarter', color_change: 'palette', tint: 'sun', ceramic: 'drop', polish: 'spark', clean: 'clean', service: 'clock', checkup: 'check', windshield: 'glass', windshield_off: 'glass', tint_off: 'sun', rims_ppf: 'wheel', replace: 'swap' };
 const ic = (n, cls = '') => `<svg class="i ${cls}" viewBox="0 0 24 24">${IC[n] || ''}</svg>`;
 
 /* ---------------- car diagram (top view, front at top) ---------------- */
@@ -1180,7 +1187,7 @@ function analyze(from, to) {
   const parts = Object.values(pt).map(o => ({ ...o, avg: o.ds.reduce((a, b) => a + b, 0) / o.ds.length, n: o.ds.length })).sort((a, b) => b.n - a.n);
   return { from, to, tasks, jobs: jobsIn, kpi, workers: list, daily, svc, parts, base, wd , teams };
 }
-const GROUP_NAME = { ppf: { ar: 'حماية', en: 'PPF' }, wrap: { ar: 'تغيير لون', en: 'Wrap' }, tint: { ar: 'عازل', en: 'Tint' }, tintx: { ar: 'نزع العازل', en: 'Tint removal' }, pol: { ar: 'بوليش', en: 'Polish' }, pol_ext: { ar: 'بوليش خارجي', en: 'Exterior polish' }, pol_int: { ar: 'بوليش داخلي', en: 'Interior polish' }, pol_both: { ar: 'بوليش داخلي وخارجي', en: 'Interior + exterior polish' }, ppfq: { ar: 'ربع حماية', en: 'Quarter PPF' }, jam: { ar: 'تركيب الجامة', en: 'Windshield install' }, jamx: { ar: 'نزع الجامة', en: 'Windshield removal' }, rep_ppf: { ar: 'تغيير قطع حماية', en: 'Replace PPF' }, rep_tint: { ar: 'تغيير قطع عازل', en: 'Replace tint' }, cer: { ar: 'سيراميك', en: 'Ceramic' } };
+const GROUP_NAME = { ppf: { ar: 'حماية', en: 'PPF' }, wrap: { ar: 'تغيير لون', en: 'Wrap' }, tint: { ar: 'عازل', en: 'Tint' }, tintx: { ar: 'نزع العازل', en: 'Tint removal' }, rim: { ar: 'حماية الرينجات', en: 'Rim PPF' }, pol: { ar: 'بوليش', en: 'Polish' }, pol_ext: { ar: 'بوليش خارجي', en: 'Exterior polish' }, pol_int: { ar: 'بوليش داخلي', en: 'Interior polish' }, pol_both: { ar: 'بوليش داخلي وخارجي', en: 'Interior + exterior polish' }, ppfq: { ar: 'ربع حماية', en: 'Quarter PPF' }, jam: { ar: 'تركيب الجامة', en: 'Windshield install' }, jamx: { ar: 'نزع الجامة', en: 'Windshield removal' }, rep_ppf: { ar: 'تغيير قطع حماية', en: 'Replace PPF' }, rep_tint: { ar: 'تغيير قطع عازل', en: 'Replace tint' }, cer: { ar: 'سيراميك', en: 'Ceramic' } };
 const partLabel = k => { const [g, p] = k.split(':'); return nm(PARTS[p]) + ' · ' + nm(GROUP_NAME[g]); };
 
 /* ---------------- dashboard ---------------- */
