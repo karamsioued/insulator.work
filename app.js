@@ -189,7 +189,7 @@ const T = {
     noData: 'لا توجد بيانات في هذه الفترة', pdf: 'PDF', excel: 'Excel', share: 'مشاركة', whatsapp: 'واتساب', email: 'إيميل',
     preparing: 'جارٍ تجهيز التقرير…', downloaded: 'تم تنزيل الملف', report: 'تقرير الإنتاجية', period: 'الفترة', generated: 'أُنشئ في',
     demoNote: 'هذه بيانات تجريبية للعرض فقط.', clearDemo: 'مسح البيانات التجريبية', loadDemo: 'تحميل بيانات تجريبية للعرض', loadDemoQ: 'إضافة بيانات تجريبية لشهرين (للعرض فقط)؟ تظهر على كل الأجهزة المربوطة، وتقدر تمسحها بزر «مسح البيانات التجريبية» بدون ما تتأثر بياناتك الحقيقية.',
-    search: 'ابحث بالسيارة، اللوحة أو العميل…', laborTime: 'وقت العمل', noJobs: 'لا توجد سيارات',
+    search: 'ابحث بالسيارة، اللوحة أو العميل…', laborTime: 'وقت العمل', noJobs: 'لا توجد سيارات', carTime: 'مدة السيارة', carTimeH: 'من أول عامل بدأ لآخر عامل خلّص', editCar: 'تعديل معلومات السيارة', carSaved: 'تم حفظ معلومات السيارة',
     users: 'المستخدمون', general: 'عام', data: 'البيانات', films: 'العوازل الحرارية', addUser: 'إضافة مستخدم', addWorker: 'إضافة عامل', addFilm: 'إضافة مادة',
     name: 'الاسم', role: 'الصلاحية', newPin: 'رمز سري جديد (4 أرقام)', pinHint: 'اتركه فارغاً لعدم التغيير', active: 'فعّال', inactive: 'موقوف',
     photo: 'الصورة', uploadPhoto: 'رفع صورة', type: 'النوع', shop: 'اسم المحل', waNum: 'رقم واتساب لاستلام التقارير', emailTo: 'إيميل استلام التقارير',
@@ -232,7 +232,7 @@ const T = {
     noData: 'No data for this period', pdf: 'PDF', excel: 'Excel', share: 'Share', whatsapp: 'WhatsApp', email: 'Email',
     preparing: 'Preparing the report…', downloaded: 'File downloaded', report: 'Productivity report', period: 'Period', generated: 'Generated',
     demoNote: 'This is demo data for preview only.', clearDemo: 'Clear demo data', loadDemo: 'Load demo data for a presentation', loadDemoQ: 'Add two months of demo data (for presenting only)? It shows on all linked devices; remove it any time with “Clear demo data” — your real data is not touched.',
-    search: 'Search by car, plate or customer…', laborTime: 'Labor time', noJobs: 'No cars',
+    search: 'Search by car, plate or customer…', laborTime: 'Labor time', noJobs: 'No cars', carTime: 'Car time', carTimeH: 'from the first worker\'s start to the last worker\'s finish', editCar: 'Edit car details', carSaved: 'Car details saved',
     users: 'Users', general: 'General', data: 'Data', films: 'Window films', addUser: 'Add user', addWorker: 'Add worker', addFilm: 'Add product',
     name: 'Name', role: 'Role', newPin: 'New PIN (4 digits)', pinHint: 'Leave empty to keep it', active: 'Active', inactive: 'Disabled',
     photo: 'Photo', uploadPhoto: 'Upload photo', type: 'Type', shop: 'Shop name', waNum: 'WhatsApp number for reports', emailTo: 'Email for reports',
@@ -401,6 +401,7 @@ const dur = x => x.start ? Math.max(0, (x.end || x.pausedAt || Date.now()) - x.s
 const shareOf = x => Math.max(1, x.share || 0, wids(x).length); // workers splitting this panel
 const mates = x => x.grp ? S.tasks.filter(t => t.grp === x.grp) : [x]; // all workers' tasks on the same shared panel
 const lab = x => dur(x) * shareOf(x); // man-time estimate for the whole panel
+const carSpan = id => { const ts = tasksOf(id).filter(x => x.start); if (!ts.length) return 0; const a = Math.min(...ts.map(x => x.start)), b = ts.every(x => x.end) ? Math.max(...ts.map(x => x.end)) : Date.now(); return Math.max(0, b - a); }; // owner: the car's time is from the first worker's start to the last worker's finish
 const runningOf = wId => S.tasks.find(t => wids(t).includes(wId) && t.start && !t.end && !t.pausedAt);
 const pausedOf = wId => S.tasks.find(t => wids(t).includes(wId) && t.start && !t.end && t.pausedAt && jobById(t.jobId)?.status === 'open');
 const since = x => x.start + (x.paused || 0); // for the live clock
@@ -868,7 +869,7 @@ function viewJob(r) {
   const j = jobById(r.id), u = me();
   if (!j || (u.role === 'supervisor' && !supCanSeeJob(j))) return { title: t('job'), back: '#/floor', html: `<div class="empty">${t('noAccess')}</div>` };
   const ts = tasksOf(j.id), done = ts.filter(x => x.end), pct = ts.length ? Math.round(done.length / ts.length * 100) : 0;
-  const labor = done.reduce((a, x) => a + lab(x), 0);
+  const span = carSpan(j.id);
   const groups = {}; ts.forEach(x => { const ids = wids(x); (ids.length ? ids : ['']).forEach(id => (groups[id] = groups[id] || []).push(x)); });
   const gRank = id => { const l = groups[id]; return l.some(x => x.start && !x.end && !x.pausedAt) ? 0 : l.some(x => x.start && !x.end) ? 1 : l.some(x => !x.end) ? 2 : 3; };
   const order = Object.keys(groups).sort((a, b) => (a === '') - (b === '') || gRank(a) - gRank(b));
@@ -877,7 +878,8 @@ function viewJob(r) {
       <div><h2>${esc(carTitle(j))}</h2>
         <div class="chips" style="margin-bottom:12px">${j.car.plate ? `<span class="plate">${esc(j.car.plate)}</span>` : ''}${j.services.map(k => `<span class="chip y">${esc(nm(SVC[k]))}</span>`).join('')}<span class="chip ${j.status === 'open' ? '' : 'g'}">${t(j.status)}</span></div>
         <div class="facts">${j.car.color || j.car.newColor ? `<span>${ic('palette')}${esc(j.car.color || '—')}${j.car.newColor ? ` → <b>${esc(j.car.newColor)}</b>` : ''}</span>` : ''}${j.car.customer ? `<span>${ic('user')}${esc(j.car.customer)}</span>` : ''}${j.car.phone ? `<a href="tel:${esc(j.car.phone)}"><span>${ic('phone')}<span class="num" dir="ltr">${esc(j.car.phone)}</span></span></a>` : ''}
-          <span>${ic('clock')}${fDT(j.createdAt)}</span>${by && u.role !== 'supervisor' ? `<span>${ic('user')}${t('createdBy')}: <b>${esc(un(by))}</b></span>` : ''}${labor ? `<span>${t('laborTime')}: <b class="num">${fDur(labor)}</b></span>` : ''}</div>
+          <span>${ic('clock')}${fDT(j.createdAt)}</span>${by && u.role !== 'supervisor' ? `<span>${ic('user')}${t('createdBy')}: <b>${esc(un(by))}</b></span>` : ''}${span ? `<span title="${t('carTimeH')}">${ic('clock')}${t('carTime')}: <b class="num">${fDur(span)}</b></span>` : ''}</div>
+        ${canEdit() && (isAdmin() || u.role !== 'supervisor' || supCanSeeJob(j)) ? `<button class="btn sm" style="margin-top:12px" data-act="edit-car" data-id="${j.id}">${ic('edit')}${t('editCar')}</button>` : ''}
         ${j.car.notes ? `<p class="muted" style="margin:12px 0 0;font-size:13.5px">${esc(j.car.notes)}</p>` : ''}</div>
       <div class="ring" style="--p:${pct}"><div><b class="num">${pct}%</b><small>${done.length}/${ts.length}</small></div></div>
     </section>
@@ -1235,7 +1237,7 @@ function histList() {
   const q = histQ.trim().toLowerCase();
   const jobs = S.jobs.filter(j => !q || [j.car.make, j.car.model, j.car.plate, j.car.customer, j.car.phone, j.car.color].join(' ').toLowerCase().includes(q)).sort((a, b) => b.createdAt - a.createdAt).slice(0, 300);
   if (!jobs.length) return `<div class="empty">${t('noJobs')}</div>`;
-  return jobs.map(j => { const ts = tasksOf(j.id), done = ts.filter(x => x.end), labT = done.reduce((a, x) => a + lab(x), 0);
+  return jobs.map(j => { const ts = tasksOf(j.id), done = ts.filter(x => x.end), labT = carSpan(j.id);
     return `<a class="l-item" href="#/job/${j.id}"><span class="av" style="--c:${j.status === 'open' ? '#FBBF15' : '#2FD896'}">${ic(j.status === 'open' ? 'clock' : 'check')}</span>
       <div class="grow"><b>${esc(carTitle(j))} ${j.car.plate ? `<span class="plate" style="margin-inline-start:6px">${esc(j.car.plate)}</span>` : ''}</b><small class="num">${fDT(j.createdAt)} · ${j.services.map(k => nm(SVC[k])).join('، ')}${userById(j.createdBy) ? ` · ${t('createdBy')}: <b>${esc(un(userById(j.createdBy)))}</b>` : ''}</small></div>
       <div style="text-align:end"><b class="num">${fDur(labT)}</b><br><small class="muted num">${done.length}/${ts.length}</small></div></a>`; }).join('');
@@ -1263,6 +1265,15 @@ function viewSettings() {
       <p class="muted" style="font-size:13px;margin:16px 0 0">${LANG === 'ar' ? 'البيانات محفوظة على هذا الجهاز. نزّل نسخة احتياطية بشكل دوري.' : 'Data is stored on this device. Download a backup regularly.'}</p></div>`;
   const html = `<div class="seg set-tabs" style="flex-wrap:wrap">${tabs.map(k => `<button class="${setTab === k ? 'on' : ''}" data-act="set-tab" data-k="${k}">${t(k)}</button>`).join('')}</div>${body}`;
   return { title: t('settings'), html };
+}
+function editCarSheet(id) {
+  const j = jobById(id); if (!j) return; const c = j.car, f = (k, type = 'text', extra = '') => `<div class="field"><label>${t(k)}</label><input class="inp" name="${k}" type="${type}" value="${esc(c[k] || '')}" ${extra}></div>`;
+  openSheet(`<form data-form="car" data-id="${j.id}"><div class="sheet-h"><h3>${t('editCar')}</h3><button type="button" class="btn icon ghost" data-act="close-sheet">${ic('x')}</button></div>
+    <div class="grid">${f('make', 'text', 'list="dl-makes" dir="auto"')}<datalist id="dl-makes">${MAKES.map(m => `<option value="${esc(m)}">`).join('')}</datalist>
+      ${f('model', 'text', 'list="dl-models" dir="auto"')}<datalist id="dl-models">${(MODELS[c.make] || []).map(m => `<option value="${esc(m)}">`).join('')}</datalist>
+      ${f('year', 'text', 'inputmode="numeric"')}${f('color')}${f('plate', 'text', 'inputmode="numeric"')}${f('customer')}${f('phone', 'tel', 'dir="ltr"')}
+      <div class="field"><label>${t('notes')}</label><textarea class="inp" name="notes" rows="2">${esc(c.notes || '')}</textarea></div></div>
+    <div class="foot"><span class="grow"></span><button type="button" class="btn ghost" data-act="close-sheet">${t('cancel')}</button><button class="btn y">${t('save')}</button></div></form>`);
 }
 function editWorkerSheet(id) {
   const w = id ? workerById(id) : { id: '', name: '', photo: '', color: PALETTE[S.workers.length % PALETTE.length], active: true };
@@ -1323,8 +1334,8 @@ async function exportXLSX() {
     ...A.workers.map(w => [nm(TEAMS[w.team]), w.rank, wn(workerById(w.id)), w.score, w.carsN, +fN(w.tasks), +w.points.toFixed(1), +fHrs(w.actual), Math.round(w.avgCar / 60000), Math.round(w.eff), Math.round(w.util), w.rework])]);
   add(t('taskLog'), [[t('date'), t('job'), t('plate'), t('service'), t('part'), t('worker'), t('film'), t('shade'), t('startTime'), t('endTime'), 'min', t('rework'), t('edited')],
     ...A.tasks.sort((a, b) => a.start - b.start).map(x => { const j = jobById(x.jobId); return [new Date(x.start).toLocaleDateString(loc()), j ? carTitle(j) : '', j?.car.plate || '', nm(SVC[x.service]), nm(PARTS[x.part]), wids(x).map(id => wn(workerById(id))).filter(Boolean).join(' + '), filmById(x.filmId)?.name || '', x.shade ? x.shade + '%' : '', fTime(x.start), fTime(x.end), Math.round(dur(x) / 60000), x.rework ? '✓' : '', x.edited ? '✓' : '']; })]);
-  add(t('jobsList'), [[t('date'), t('make'), t('model'), t('year'), t('color'), t('plate'), t('customer'), t('phone'), t('services'), t('status'), t('laborTime') + ' (min)'],
-    ...A.jobs.map(j => [fDT(j.createdAt), j.car.make, j.car.model, j.car.year, j.car.color, j.car.plate, j.car.customer, j.car.phone, j.services.map(s => nm(SVC[s])).join(' + '), t(j.status), Math.round(tasksOf(j.id).filter(x => x.end).reduce((a, x) => a + lab(x), 0) / 60000)])]);
+  add(t('jobsList'), [[t('date'), t('make'), t('model'), t('year'), t('color'), t('plate'), t('customer'), t('phone'), t('services'), t('status'), t('carTime') + ' (min)'],
+    ...A.jobs.map(j => [fDT(j.createdAt), j.car.make, j.car.model, j.car.year, j.car.color, j.car.plate, j.car.customer, j.car.phone, j.services.map(s => nm(SVC[s])).join(' + '), t(j.status), Math.round(carSpan(j.id) / 60000)])]);
   add(t('partTimes'), [[t('part'), t('count'), t('avg') + ' (min)', t('teamAvg') + ' (min)', t('best') + ' (min)', t('worker')], ...A.parts.map(o => [partLabel(o.k), o.n, Math.round(o.avg / 60000), Math.round(A.base[o.k] / 60000), Math.round(o.best.d / 60000), wn(workerById(o.best.w)) || ''])]);
   if (LANG === 'ar') wb.Workbook = { Views: [{ RTL: true }] };
   XL.writeFile(wb, reportName('xlsx')); toast(t('downloaded'));
@@ -1347,8 +1358,8 @@ function reportHTML() {
     ${progressPDF()}
     <h2>${t('partTimes')}</h2><table><thead><tr><th>${t('part')}</th><th>${t('count')}</th><th>${t('avg')}</th><th>${t('teamAvg')}</th><th>${t('best')}</th></tr></thead><tbody>
       ${A.parts.slice(0, 18).map(o => `<tr><td>${esc(partLabel(o.k))}</td><td>${o.n}</td><td>${fDur(o.avg)}</td><td>${fDur(A.base[o.k])}</td><td>${fDur(o.best.d)} · ${esc(wn(workerById(o.best.w)) || '')}</td></tr>`).join('')}</tbody></table>
-    <h2>${t('jobsList')}</h2><table><thead><tr><th>${t('date')}</th><th>${t('job')}</th><th>${t('plate')}</th><th>${t('services')}</th><th>${t('laborTime')}</th><th>${t('status')}</th></tr></thead><tbody>
-      ${A.jobs.sort((a, b) => a.createdAt - b.createdAt).map(j => `<tr><td>${fDate(j.createdAt)}</td><td>${esc(carTitle(j))}</td><td>${esc(j.car.plate)}</td><td>${j.services.map(s => esc(nm(SVC[s]))).join(' + ')}</td><td>${fDur(tasksOf(j.id).filter(x => x.end).reduce((a, x) => a + lab(x), 0))}</td><td>${t(j.status)}</td></tr>`).join('')}</tbody></table>
+    <h2>${t('jobsList')}</h2><table><thead><tr><th>${t('date')}</th><th>${t('job')}</th><th>${t('plate')}</th><th>${t('services')}</th><th>${t('carTime')}</th><th>${t('status')}</th></tr></thead><tbody>
+      ${A.jobs.sort((a, b) => a.createdAt - b.createdAt).map(j => `<tr><td>${fDate(j.createdAt)}</td><td>${esc(carTitle(j))}</td><td>${esc(j.car.plate)}</td><td>${j.services.map(s => esc(nm(SVC[s]))).join(' + ')}</td><td>${fDur(carSpan(j.id))}</td><td>${t(j.status)}</td></tr>`).join('')}</tbody></table>
     <div class="rep-f">Insulator Workshop Tracker · ${t('saturdayToThursday')}</div></div>`;
 }
 const PDF_OPTS = () => ({ margin: [6, 0, 8, 0], filename: reportName('pdf'), image: { type: 'jpeg', quality: .96 }, html2canvas: { scale: 2, useCORS: true, backgroundColor: '#ffffff', scrollX: 0, scrollY: 0 }, jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }, pagebreak: { mode: ['css', 'legacy'] } });
@@ -1427,7 +1438,7 @@ const ACTS = {
   goto: el => go(el.dataset.h),
   'exp-pdf': exportPDF, 'exp-xls': exportXLSX, 'exp-share': sharePDF, 'exp-wa': shareWA, 'exp-mail': shareMail,
   'set-tab': el => { setTab = el.dataset.k; render(); },
-  'edit-worker': el => editWorkerSheet(el.dataset.id), 'edit-film': el => editFilmSheet(el.dataset.id, el.dataset.type), 'edit-user': el => editUserSheet(el.dataset.id),
+  'edit-worker': el => editWorkerSheet(el.dataset.id), 'edit-car': el => editCarSheet(el.dataset.id), 'edit-film': el => editFilmSheet(el.dataset.id, el.dataset.type), 'edit-user': el => editUserSheet(el.dataset.id),
   'pick-color': el => { const f = el.closest('form'); setTimeout(() => $$('[name=color]', f).forEach(r => { const s = r.nextElementSibling; s.style.boxShadow = r.checked ? '' : 'none'; s.style.opacity = r.checked ? 1 : .6; }), 0); },
   'delete-user': el => { const u = userById(el.dataset.id); if (u.role === 'admin' && S.users.filter(x => x.role === 'admin' && x.active).length < 2) return toast(t('needAdmin')); if (!confirmBox(t('delete') + ' ' + u.name + '?')) return; S.users = S.users.filter(x => x.id !== u.id); db.save(); closeSheet(); render(); },
   backup: () => download(new Blob([JSON.stringify(S, null, 1)], { type: 'application/json' }), `insulator-backup-${new Date().toISOString().slice(0, 10)}.json`),
@@ -1463,6 +1474,7 @@ function taskFormSync(f) {
 const FORMS = {
   'cloud-link': async f => { const b = f.querySelector('button'); b.disabled = true; const ok = await cloud.link(f.pw.value); if (!ok) { b.disabled = false; f.pw.value = ''; toast(LANG === 'ar' ? 'كلمة السر غير صحيحة' : 'Wrong password'); } },
   task: saveTaskForm,
+  car: f => { const j = jobById(f.dataset.id); if (!j) return; const fd = new FormData(f); ['make', 'model', 'year', 'color', 'plate', 'customer', 'phone', 'notes'].forEach(k => j.car[k] = (fd.get(k) || '').trim()); db.save(); closeSheet(); render(); toast('✓ ' + t('carSaved')); },
   settings: f => { const fd = new FormData(f); Object.assign(S.settings, { shop: fd.get('shop') || 'Insulator', wa: fd.get('wa'), email: fd.get('email'), shiftHours: +fd.get('shiftHours') || 9, autoLock: +fd.get('autoLock') || 10, breakStart: fd.get('breakStart') || '12:00', breakEnd: fd.get('breakEnd') || '16:00', breakWarn: +fd.get('breakWarn') || 5, shiftStart: fd.get('shiftStart') || '09:00', shiftEnd: fd.get('shiftEnd') || '21:00', otResume: fd.get('otResume') || '13:00' }); db.save(); toast('✓ ' + t('save')); render(); },
   worker: f => { const fd = new FormData(f), id = f.dataset.id, data = { name: fd.get('name').trim(), nameEn: (fd.get('nameEn') || '').trim(), photo: fd.get('photo'), color: fd.get('color') || PALETTE[0], team: fd.get('team') || 'ppf', active: !!fd.get('active') };
     if (id) Object.assign(workerById(id), data); else S.workers.push({ id: uid(), ...data }); db.save(); closeSheet(); render(); },
