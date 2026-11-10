@@ -487,3 +487,33 @@ html{touch-action:manipulation}
 @media(max-width:860px){.sec-h .grow{flex-basis:100%;height:0}.sec-h .btn.sm{font-size:12.5px;padding-inline:10px}}
 .lr-live{padding:0 8px!important;font-size:11px!important;margin-inline-start:6px;vertical-align:middle}
 @media(max-width:600px){.period .nav{flex-wrap:wrap;justify-content:center;max-width:100%}.period .lbl{min-width:0;flex:1 1 auto;font-size:14px}}
+/* v42: grouped services */
+#svc-cats{display:flex;flex-direction:column;gap:16px}
+.svc-cat-h{display:flex;align-items:center;gap:8px;margin-bottom:8px;font-size:14.5px}.svc-cat-h svg{width:18px;height:18px;stroke:var(--yellow)}.svc-cat-h small{font-size:12.5px}
+.svc-cat .svc{min-height:0;flex-direction:row;align-items:center;padding:12px 14px;gap:10px}
+.svc-cat .svc .ic{width:30px;height:30px;flex:none}.svc-cat .svc b{font-size:14px;padding-inline-end:24px}
+.svc-cat .svc .tick{top:50%;transform:translateY(-50%)}
+@media(max-width:600px){.svc-cat .svc-grid{grid-template-columns:1fr 1fr}}
+/* v43: follow-up page, car history, plate hint */
+.nav-i,.tabbar a{position:relative}
+.nav-badge{position:absolute;top:2px;inset-inline-end:6px;min-width:18px;height:18px;padding:0 5px;border-radius:99px;background:var(--red);color:#fff;font-size:11px;font-style:normal;font-weight:700;display:grid;place-items:center;line-height:1}
+.nav-i .nav-badge{position:static;margin-inline-start:auto}
+.fu-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:12px}
+@media(max-width:600px){.fu-list{grid-template-columns:1fr}}
+.fu-card{display:flex;flex-direction:column;gap:10px;padding:16px;border-radius:var(--r-lg);background:rgba(15,31,71,.55);border:1px solid var(--line)}
+.fu-card.check{border-color:rgba(95,180,255,.35)}.fu-card.svc{border-color:rgba(251,191,21,.4)}.fu-card.done{opacity:.65}
+.fu-top{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.fu-k{display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:700}.fu-k svg{width:16px;height:16px}
+.fu-card.check .fu-k{color:var(--blue)}.fu-card.check .fu-k svg{stroke:var(--blue)}.fu-card.svc .fu-k{color:var(--yellow)}.fu-card.svc .fu-k svg{stroke:var(--yellow)}
+.fu-top .grow{flex:1}.fu-top .chip{padding:1px 8px;font-size:11.5px}
+.fu-main{display:flex;flex-direction:column;gap:2px}.fu-main b{font-size:16px}.fu-main small{font-size:12.5px}
+.fu-act{display:flex;flex-wrap:wrap;gap:8px;align-items:center}.fu-act .grow{flex:1}
+.fu-done{display:flex;align-items:center;gap:6px;color:var(--green);font-size:13px}.fu-done svg{width:16px;height:16px;stroke:var(--green)}
+.visits{margin-top:18px;padding:16px;display:flex;flex-direction:column;gap:6px}
+.visits .cm-h .chip{margin-inline-start:auto}
+.v-row{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:12px;background:rgba(255,255,255,.03);border:1px solid var(--line);font-size:13.5px}
+.v-row.cur{border-color:rgba(251,191,21,.4)}.v-row span:nth-child(2){flex:1}.v-row .chip{padding:1px 8px;font-size:11.5px}
+.plate-hint{display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:14px;background:rgba(251,191,21,.08);border:1px solid rgba(251,191,21,.35)}
+.plate-hint>svg{stroke:var(--yellow)}.plate-hint .grow{flex:1;display:flex;flex-direction:column}.plate-hint small{font-size:12.5px}
+#plate-hint:empty{display:none}
+@media(max-width:860px){.tabbar a{padding:6px 4px;font-size:10.5px}}

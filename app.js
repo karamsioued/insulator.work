@@ -78,12 +78,21 @@ const SERVICES = [
   { k: 'polish', g: 'pol', ar: 'بوليش', en: 'Polish', parts: ['whole'] },
   { k: 'clean', g: 'cln', ar: 'تنظيف', en: 'Cleaning', parts: ['whole'] }, // after PPF — done by the polish team
   { k: 'windshield', g: 'jam', ar: 'الجامة الأمامية', en: 'Front windshield', parts: ['windshield'] },
+  { k: 'service', g: 'srv', ar: 'سيرفيس', en: 'Service visit', parts: ['whole'] }, // a car we worked on before: just pick the workers
   { k: 'replace', g: 'rep', ar: 'تغيير قطع', en: 'Panel replacement', parts: [] },
 ];
 const SVC = Object.fromEntries(SERVICES.map(s => [s.k, s]));
+// how the new-car page groups the services
+const SVC_CATS = [
+  { k: 'ppf', ic: 'shield', ar: 'الحماية', en: 'PPF', svcs: ['full_ppf', 'half_ppf', 'quarter_ppf', 'color_change'], hint: { ar: 'خيار واحد فقط', en: 'one only' } },
+  { k: 'tint', ic: 'sun', ar: 'العازل الحراري', en: 'Tint', svcs: ['tint', 'windshield'] },
+  { k: 'pol', ic: 'spark', ar: 'البوليش', en: 'Polish', svcs: ['polish', 'ceramic', 'clean'] },
+  { k: 'rep', ic: 'swap', ar: 'تغيير القطع', en: 'Panel replacement', svcs: ['replace'] },
+  { k: 'srv', ic: 'clock', ar: 'سيرفيس', en: 'Service', svcs: ['service'], hint: { ar: 'لسيارة اشتغلنا عليها من قبل', en: 'for a car we worked on before' } },
+];
 const FILM_TYPES = { ppf: { ar: 'حماية PPF', en: 'PPF film' }, tint: { ar: 'عازل حراري', en: 'Window film' }, wrap: { ar: 'تغيير لون', en: 'Color wrap' }, cer: { ar: 'سيراميك', en: 'Ceramic' } };
 // kind = 'ppf' | 'tint' — only used by "panel replacement", where the supervisor picks which one first
-const poolOf = (svc, kind) => { const g = SVC[svc].g; return g === 'tint' ? GLASS : g === 'jam' ? ['windshield'] : g === 'rep' ? (kind === 'tint' ? GLASS : BODY) : (g === 'cer' || g === 'pol' || g === 'cln') ? ['whole'] : BODY; };
+const poolOf = (svc, kind) => { const g = SVC[svc].g; return g === 'tint' ? GLASS : g === 'jam' ? ['windshield'] : g === 'rep' ? (kind === 'tint' ? GLASS : BODY) : (g === 'cer' || g === 'pol' || g === 'cln' || g === 'srv') ? ['whole'] : BODY; };
 const isTintLike = (svc, kind) => { const g = SVC[svc].g; return g === 'tint' || g === 'jam' || (g === 'rep' && kind === 'tint'); };
 // services with a sub-type picked first: panel replacement (tint/PPF) and polish (exterior/interior/both)
 const KINDS = { rep: ['tint', 'ppf'], pol: ['ext', 'int', 'both'] };
@@ -164,7 +173,7 @@ const T = {
     closeConfirm: 'بعض المهام لم تنتهِ بعد. إغلاق السيارة على أي حال؟', deleteConfirm: 'حذف نهائي لهذه السيارة وكل مهامها؟',
     status: 'الحالة', open: 'قيد العمل', closed: 'مغلقة', editTask: 'تعديل المهمة', service: 'الخدمة', part: 'القطعة',
     startTime: 'وقت البدء', endTime: 'وقت الانتهاء', rework: 'إعادة عمل (خطأ وتمت إعادته)', delete: 'حذف', save: 'حفظ', cancel: 'إلغاء',
-    edited: 'معدّل', demoMode: 'وضع العرض — بيانات تجريبية للشرح فقط، منفصلة تماماً عن بيانات الورشة', demoReset: 'إعادة البيانات', breakStart: 'بداية الاستراحة (إيقاف تلقائي)', breakEnd: 'رجوع للعمل (تذكير)', breakWarn: 'تنبيه قبل الاستراحة (دقائق)', breakSoon: '⏰ باقي {0} دقائق على الاستراحة — {1} مهمة جارية ستتوقف تلقائياً', breakPaused: '⏸ وقت الاستراحة: تم إيقاف {0} مهمة تلقائياً. استأنفوا الساعة {1}', breakOver: '▶ انتهت الاستراحة — {0} مهمة متوقفة بانتظار الاستئناف', halfPart: 'نصف', workingNow2: 'يشتغل الآن', firstPart: 'يشتغل على أول قطعة — تُحسب في الترتيب عند الإنهاء', shiftStart: 'بداية الدوام', shiftEnd: 'نهاية الدوام', otResume: 'رجوع الأوفرتايم', otToday: 'أوفرتايم اليوم', otHint: 'اليوم أوفرتايم: الرجوع من الاستراحة الساعة 13:00 بدل 16:00', otOn: 'تم: اليوم أوفرتايم — الرجوع الساعة {0}', otOff: 'تم إلغاء الأوفرتايم لليوم', wDone: 'أنهى شغله', waitingW: 'ينتظر', carMap: 'خريطة السيارة', carMapHint: 'اضغط على أي جزء لترى من يعمل عليه', partDoneAll: 'إنهاء الجزء لكل العمال', partStartAll: 'ابدأ للكل', partPauseAll: 'إيقاف مؤقت للكل', partResumeAll: 'استئناف للكل', partFinishQ: 'إنهاء «{0}» وإيقاف عداد {1} عامل؟', partEmpty: 'هذا الجزء ليس ضمن شغل هذه السيارة', sWait: 'لم يبدأ', sRun: 'جاري', sPause: 'متوقف', sDone: 'منتهي', otherParts: 'أجزاء أخرى', polWhat: 'نوع البوليش', polExt: 'خارجي', polInt: 'داخلي', polBoth: 'داخلي وخارجي', jamSpec: 'نوع الفيلم', newColor: 'اللون الجديد', pinTaken: 'هذا الرمز مستخدم لحساب آخر — اختر رمزاً مختلفاً', team: 'الفريق', progress: 'تطوّر الأداء مع الوقت', weekVs: 'أسبوع بأسبوع', monthVs: 'شهر بشهر', ptsDay: 'نقاط/يوم', change: 'التغيّر', trend6: 'آخر 6 فترات', soFar: 'حتى الآن', prevShort: 'السابق', curShort: 'الحالي', new: 'جديد', teamRate: 'متوسط الفريق', progressHint: 'نقارن معدل الإنتاج اليومي (نقاط صعوبة القطع ÷ أيام العمل) حتى تكون المقارنة عادلة حتى لو الفترة الحالية لم تنتهِ بعد. الخط الأصفر يوضح اتجاه العامل في آخر 6 فترات.', lowRank: 'الأضعف', noWorkP: 'لا عمل في هذه الفترة', manualT: 'وقت يدوي', editedT: 'وقت معدّل', addTime: 'إضافة وقت', timeSec: 'الوقت', timeHint: 'إذا نسيت تسجيل الوقت أو كنت مشغولاً، أدخله هنا تقريبياً.', pauseMin: 'وقت التوقف (دقيقة)', netDur: 'مدة العمل', editLog: 'سجل تعديل الوقت', was: 'كان', none: 'لا شيء', manualNote: '{0} مهام وقتها أُدخل أو عُدّل يدوياً في هذه الفترة', photoErr: 'لم نستطع قراءة الصورة — اختر صورة JPG أو PNG (صور HEIC من الآيفون لا تُقرأ في متصفح الكمبيوتر)', pauseTooLong: 'وقت التوقف أطول من مدة العمل', noStartEnd: 'أدخل وقت البدء أولاً', alreadyRunning: '{0} يعمل الآن على مهمة أخرى — ابدأ على أي حال؟', started: 'بدأ العمل', finished: 'انتهت المهمة',
+    edited: 'معدّل', demoMode: 'وضع العرض — بيانات تجريبية للشرح فقط، منفصلة تماماً عن بيانات الورشة', demoReset: 'إعادة البيانات', breakStart: 'بداية الاستراحة (إيقاف تلقائي)', breakEnd: 'رجوع للعمل (تذكير)', breakWarn: 'تنبيه قبل الاستراحة (دقائق)', breakSoon: '⏰ باقي {0} دقائق على الاستراحة — {1} مهمة جارية ستتوقف تلقائياً', breakPaused: '⏸ وقت الاستراحة: تم إيقاف {0} مهمة تلقائياً. استأنفوا الساعة {1}', breakOver: '▶ انتهت الاستراحة — {0} مهمة متوقفة بانتظار الاستئناف', halfPart: 'نصف', follow: 'المتابعة', fuSub: 'تواصل مع العملاء', fuCheck: 'تشييك بعد التركيب', fuSvc: 'موعد السيرفيس', fuLate: 'متأخر {0} يوم', fuFinished: 'انتهى الشغل', visitsN: 'زارتنا {0} مرات', firstVisit: 'أول زيارة', call: 'اتصال', whatsapp: 'واتساب', noPhone: 'لا يوجد رقم جوال', fuLater: 'بعد أسبوع', fuContacted: 'تم التواصل', fuDoneBy: 'تم التواصل — {0} · {1}', fuIntro: 'بعد {0} أيام من تسليم السيارة نكلم العميل يمرّ للتشييك، وبعد {1} أشهر من آخر زيارة نكلمه للسيرفيس. اضغط «تم التواصل» بعد المكالمة.', fuNow: 'يحتاجون تواصل الآن', fuNone: 'ما فيه أحد يحتاج تواصل الآن', fuSnoozed: 'مؤجّلة', fuDoneList: 'تم التواصل مؤخراً', fuSnoozedT: 'تأجّلت أسبوع', fuDoneT: 'تم تسجيل التواصل', carHistory: 'سجل السيارة', thisVisit: 'هذه الزيارة', seenBefore: 'هذه السيارة زارتنا {0} مرات من قبل', lastVisit: 'آخر زيارة', fillCar: 'تعبئة البيانات', filled: 'تمت تعبئة بيانات السيارة', fuAlert: '📞 {0} عملاء يحتاجون تواصل (تشييك أو سيرفيس)', fuOpen: 'عرض', tapWorkers: 'اضغط على العمال اللي بيشتغلون على السيارة — بدون تحديد قطع', workingNow2: 'يشتغل الآن', firstPart: 'يشتغل على أول قطعة — تُحسب في الترتيب عند الإنهاء', shiftStart: 'بداية الدوام', shiftEnd: 'نهاية الدوام', otResume: 'رجوع الأوفرتايم', otToday: 'أوفرتايم اليوم', otHint: 'اليوم أوفرتايم: الرجوع من الاستراحة الساعة 13:00 بدل 16:00', otOn: 'تم: اليوم أوفرتايم — الرجوع الساعة {0}', otOff: 'تم إلغاء الأوفرتايم لليوم', wDone: 'أنهى شغله', waitingW: 'ينتظر', carMap: 'خريطة السيارة', carMapHint: 'اضغط على أي جزء لترى من يعمل عليه', partDoneAll: 'إنهاء الجزء لكل العمال', partStartAll: 'ابدأ للكل', partPauseAll: 'إيقاف مؤقت للكل', partResumeAll: 'استئناف للكل', partFinishQ: 'إنهاء «{0}» وإيقاف عداد {1} عامل؟', partEmpty: 'هذا الجزء ليس ضمن شغل هذه السيارة', sWait: 'لم يبدأ', sRun: 'جاري', sPause: 'متوقف', sDone: 'منتهي', otherParts: 'أجزاء أخرى', polWhat: 'نوع البوليش', polExt: 'خارجي', polInt: 'داخلي', polBoth: 'داخلي وخارجي', jamSpec: 'نوع الفيلم', newColor: 'اللون الجديد', pinTaken: 'هذا الرمز مستخدم لحساب آخر — اختر رمزاً مختلفاً', team: 'الفريق', progress: 'تطوّر الأداء مع الوقت', weekVs: 'أسبوع بأسبوع', monthVs: 'شهر بشهر', ptsDay: 'نقاط/يوم', change: 'التغيّر', trend6: 'آخر 6 فترات', soFar: 'حتى الآن', prevShort: 'السابق', curShort: 'الحالي', new: 'جديد', teamRate: 'متوسط الفريق', progressHint: 'نقارن معدل الإنتاج اليومي (نقاط صعوبة القطع ÷ أيام العمل) حتى تكون المقارنة عادلة حتى لو الفترة الحالية لم تنتهِ بعد. الخط الأصفر يوضح اتجاه العامل في آخر 6 فترات.', lowRank: 'الأضعف', noWorkP: 'لا عمل في هذه الفترة', manualT: 'وقت يدوي', editedT: 'وقت معدّل', addTime: 'إضافة وقت', timeSec: 'الوقت', timeHint: 'إذا نسيت تسجيل الوقت أو كنت مشغولاً، أدخله هنا تقريبياً.', pauseMin: 'وقت التوقف (دقيقة)', netDur: 'مدة العمل', editLog: 'سجل تعديل الوقت', was: 'كان', none: 'لا شيء', manualNote: '{0} مهام وقتها أُدخل أو عُدّل يدوياً في هذه الفترة', photoErr: 'لم نستطع قراءة الصورة — اختر صورة JPG أو PNG (صور HEIC من الآيفون لا تُقرأ في متصفح الكمبيوتر)', pauseTooLong: 'وقت التوقف أطول من مدة العمل', noStartEnd: 'أدخل وقت البدء أولاً', alreadyRunning: '{0} يعمل الآن على مهمة أخرى — ابدأ على أي حال؟', started: 'بدأ العمل', finished: 'انتهت المهمة',
     noTasksW: 'لا توجد مهام معيّنة لهذا العامل', week: 'أسبوع', month: 'شهر', thisWeek: 'هذا الأسبوع',
     kCars: 'السيارات', kTasks: 'القطع المنجزة', kHours: 'ساعات العمل', kAvgCar: 'متوسط العمل للسيارة', kTurn: 'متوسط مدة التسليم', kRework: 'نسبة إعادة العمل',
     ranking: 'ترتيب الإنتاجية', score: 'التقييم', cars: 'سيارات', hours: 'ساعات', eff: 'الكفاءة', util: 'الاستغلال', avgCar: 'متوسط/سيارة',
@@ -207,7 +216,7 @@ const T = {
     closeConfirm: 'Some tasks are not finished. Close the car anyway?', deleteConfirm: 'Permanently delete this car and all its tasks?',
     status: 'Status', open: 'In progress', closed: 'Closed', editTask: 'Edit task', service: 'Service', part: 'Panel',
     startTime: 'Start time', endTime: 'End time', rework: 'Rework (mistake, redone)', delete: 'Delete', save: 'Save', cancel: 'Cancel',
-    edited: 'edited', demoMode: 'Presentation mode — sample data only, completely separate from the workshop data', demoReset: 'Reset data', breakStart: 'Break starts (auto-pause)', breakEnd: 'Back to work (reminder)', breakWarn: 'Warn before break (minutes)', breakSoon: '⏰ {0} minutes to the break — {1} running tasks will pause automatically', breakPaused: '⏸ Break time: {0} tasks paused automatically. Resume at {1}', breakOver: '▶ Break is over — {0} paused tasks waiting to resume', halfPart: 'half', workingNow2: 'working now', firstPart: 'on the first panel — counts in the ranking once finished', shiftStart: 'Shift starts', shiftEnd: 'Shift ends', otResume: 'Overtime: back at', otToday: 'Overtime today', otHint: 'Overtime today: back from the break at 13:00 instead of 16:00', otOn: 'Overtime today — back at {0}', otOff: 'Overtime cancelled for today', wDone: 'Work done', waitingW: 'Waiting', carMap: 'Car map', carMapHint: 'Tap any part to see who is working on it', partDoneAll: 'Finish part for everyone', partStartAll: 'Start all', partPauseAll: 'Pause all', partResumeAll: 'Resume all', partFinishQ: 'Finish “{0}” and stop the timer of {1} worker(s)?', partEmpty: 'This part is not in this car\'s work', sWait: 'Not started', sRun: 'Running', sPause: 'Paused', sDone: 'Done', otherParts: 'Other parts', polWhat: 'Polish type', polExt: 'Exterior', polInt: 'Interior', polBoth: 'Interior + exterior', jamSpec: 'Film type', newColor: 'New colour', pinTaken: 'This code is used by another account — pick a different one', team: 'Team', progress: 'Progress over time', weekVs: 'Week vs week', monthVs: 'Month vs month', ptsDay: 'Pts/day', change: 'Change', trend6: 'Last 6 periods', soFar: 'so far', prevShort: 'prev', curShort: 'now', new: 'new', teamRate: 'Team average', progressHint: 'We compare the daily production rate (panel difficulty points ÷ working days) so it stays fair even while the current period is still running. The yellow line shows each worker\'s direction over the last 6 periods.', lowRank: 'lowest', noWorkP: 'no work this period', manualT: 'manual time', editedT: 'time edited', addTime: 'Add time', timeSec: 'Time', timeHint: 'Forgot to log it or were busy? Enter an approximate time here.', pauseMin: 'Paused (minutes)', netDur: 'Work time', editLog: 'Time edit history', was: 'was', none: 'none', manualNote: '{0} tasks had their time entered or edited by hand in this period', photoErr: 'Could not read the photo — pick a JPG or PNG (iPhone HEIC photos do not open in desktop browsers)', pauseTooLong: 'Paused time is longer than the work span', noStartEnd: 'Enter the start time first', alreadyRunning: '{0} is already working on another task — start anyway?', started: 'Started', finished: 'Task finished',
+    edited: 'edited', demoMode: 'Presentation mode — sample data only, completely separate from the workshop data', demoReset: 'Reset data', breakStart: 'Break starts (auto-pause)', breakEnd: 'Back to work (reminder)', breakWarn: 'Warn before break (minutes)', breakSoon: '⏰ {0} minutes to the break — {1} running tasks will pause automatically', breakPaused: '⏸ Break time: {0} tasks paused automatically. Resume at {1}', breakOver: '▶ Break is over — {0} paused tasks waiting to resume', halfPart: 'half', follow: 'Follow-up', fuSub: 'Customer calls', fuCheck: 'Post-job check-up', fuSvc: 'Service due', fuLate: '{0} days late', fuFinished: 'Finished', visitsN: '{0} visits', firstVisit: 'first visit', call: 'Call', whatsapp: 'WhatsApp', noPhone: 'No phone number', fuLater: 'In a week', fuContacted: 'Contacted', fuDoneBy: 'Contacted — {0} · {1}', fuIntro: '{0} days after handover we call the customer for a check-up, and {1} months after the last visit we call for a service. Tap «Contacted» after the call.', fuNow: 'Need a call now', fuNone: 'Nobody needs a call right now', fuSnoozed: 'Snoozed', fuDoneList: 'Recently contacted', fuSnoozedT: 'Snoozed for a week', fuDoneT: 'Marked as contacted', carHistory: 'Car history', thisVisit: 'this visit', seenBefore: 'This car has visited us {0} times before', lastVisit: 'Last visit', fillCar: 'Fill details', filled: 'Car details filled', fuAlert: '📞 {0} customers need a call (check-up or service)', fuOpen: 'Open', tapWorkers: 'Tap the workers who will work on this car — no panels needed', workingNow2: 'working now', firstPart: 'on the first panel — counts in the ranking once finished', shiftStart: 'Shift starts', shiftEnd: 'Shift ends', otResume: 'Overtime: back at', otToday: 'Overtime today', otHint: 'Overtime today: back from the break at 13:00 instead of 16:00', otOn: 'Overtime today — back at {0}', otOff: 'Overtime cancelled for today', wDone: 'Work done', waitingW: 'Waiting', carMap: 'Car map', carMapHint: 'Tap any part to see who is working on it', partDoneAll: 'Finish part for everyone', partStartAll: 'Start all', partPauseAll: 'Pause all', partResumeAll: 'Resume all', partFinishQ: 'Finish “{0}” and stop the timer of {1} worker(s)?', partEmpty: 'This part is not in this car\'s work', sWait: 'Not started', sRun: 'Running', sPause: 'Paused', sDone: 'Done', otherParts: 'Other parts', polWhat: 'Polish type', polExt: 'Exterior', polInt: 'Interior', polBoth: 'Interior + exterior', jamSpec: 'Film type', newColor: 'New colour', pinTaken: 'This code is used by another account — pick a different one', team: 'Team', progress: 'Progress over time', weekVs: 'Week vs week', monthVs: 'Month vs month', ptsDay: 'Pts/day', change: 'Change', trend6: 'Last 6 periods', soFar: 'so far', prevShort: 'prev', curShort: 'now', new: 'new', teamRate: 'Team average', progressHint: 'We compare the daily production rate (panel difficulty points ÷ working days) so it stays fair even while the current period is still running. The yellow line shows each worker\'s direction over the last 6 periods.', lowRank: 'lowest', noWorkP: 'no work this period', manualT: 'manual time', editedT: 'time edited', addTime: 'Add time', timeSec: 'Time', timeHint: 'Forgot to log it or were busy? Enter an approximate time here.', pauseMin: 'Paused (minutes)', netDur: 'Work time', editLog: 'Time edit history', was: 'was', none: 'none', manualNote: '{0} tasks had their time entered or edited by hand in this period', photoErr: 'Could not read the photo — pick a JPG or PNG (iPhone HEIC photos do not open in desktop browsers)', pauseTooLong: 'Paused time is longer than the work span', noStartEnd: 'Enter the start time first', alreadyRunning: '{0} is already working on another task — start anyway?', started: 'Started', finished: 'Task finished',
     noTasksW: 'No tasks assigned to this worker', week: 'Week', month: 'Month', thisWeek: 'This week',
     kCars: 'Cars', kTasks: 'Panels done', kHours: 'Labor hours', kAvgCar: 'Avg labor / car', kTurn: 'Avg turnaround', kRework: 'Rework rate',
     ranking: 'Productivity ranking', score: 'Score', cars: 'Cars', hours: 'Hours', eff: 'Efficiency', util: 'Utilization', avgCar: 'Avg/car',
@@ -349,7 +358,8 @@ function makeDemo(s) {
         if (['pol', 'cer', 'cln'].includes(SVC[k].g)) return add(k, 'whole', rnd() < .3 && crewL.length > 1 ? crewL : [crewL[0]], k === 'polish' ? { kind: pick(['ext', 'ext', 'int', 'both']) } : {});
         SVC[k].parts.forEach(p => { const w = crewP[i++ % crewP.length]; const pair = ['fbumper', 'rbumper', 'roof', 'hood'].includes(p) && crewP.length > 1 && rnd() < .55; add(k, p, pair ? [w, crewP.find(x => x !== w)] : [w]); });
       });
-      if (allDone) { job.status = 'closed'; job.closedAt = last + 25 * 60000; }
+      if (allDone) { job.status = 'closed'; job.closedAt = last + 25 * 60000; if (job.closedAt < Date.now() - 5 * DAY) job.fu = { check: { at: job.closedAt + 3 * DAY + 3600000, by: rnd() < .5 ? 'u_sup' : 'u_omar' } }; } // older cars were already called
+      if (rnd() < .12 && s.jobs.length > 8) { const o = pick(s.jobs.filter(x => x.car.plate)); Object.assign(job.car, { make: o.car.make, model: o.car.model, year: o.car.year, color: o.car.color, plate: o.car.plate, customer: o.car.customer }); } // some cars come back
       s.jobs.push(job);
     }
   }
@@ -370,7 +380,7 @@ const DIFFICULTY = { fbumper: 2, rbumper: 1.85, quarter_l: 1.7, quarter_r: 1.7, 
 const QUARTER_HALF = ['hood', 'fender_l', 'fender_r'];
 const isHalfPart = (svc, part) => svc === 'quarter_ppf' && QUARTER_HALF.includes(part);
 const pName = (part, svc) => nm(PARTS[part]) + (isHalfPart(svc, part) ? ' (' + t('halfPart') + ')' : '');
-const ptsOf = x => (DIFFICULTY[x.part] || 1) * (SVC[x.service].g === 'wrap' ? 1.5 : 1) * (isHalfPart(x.service, x.part) ? .5 : 1) * (SVC[x.service].g === 'pol' ? ({ int: .8, both: 1.6 }[x.kind] || 1) : 1) * (SVC[x.service].g === 'cln' ? .5 : 1); // cleaning = half a polish
+const ptsOf = x => (DIFFICULTY[x.part] || 1) * (SVC[x.service].g === 'wrap' ? 1.5 : 1) * (isHalfPart(x.service, x.part) ? .5 : 1) * (SVC[x.service].g === 'pol' ? ({ int: .8, both: 1.6 }[x.kind] || 1) : 1) * (['cln', 'srv'].includes(SVC[x.service].g) ? .5 : 1); // cleaning = half a polish
 const fN = v => Number.isInteger(v) ? String(v) : v.toFixed(1);
 const un = u => u ? (LANG === 'en' && u.nameEn ? u.nameEn : u.name) : '';
 const wn = w => w ? (LANG === 'en' && w.nameEn ? w.nameEn : w.name) : '';
@@ -398,9 +408,10 @@ const NAV = [
   { k: 'new', icon: 'plus', roles: ['admin', 'supervisor'] },
   { k: 'dashboard', icon: 'chart', roles: ['admin', 'manager'] },
   { k: 'history', icon: 'history', roles: ['admin', 'manager'] },
+  { k: 'follow', icon: 'phone', roles: ['admin', 'manager', 'supervisor'] },
   { k: 'settings', icon: 'settings', roles: ['admin'] },
 ];
-const ACCESS = { floor: ['admin', 'manager', 'supervisor'], new: ['admin', 'supervisor'], job: ['admin', 'manager', 'supervisor'], dashboard: ['admin', 'manager'], worker: ['admin', 'manager'], history: ['admin', 'manager'], settings: ['admin'] };
+const ACCESS = { floor: ['admin', 'manager', 'supervisor'], new: ['admin', 'supervisor'], job: ['admin', 'manager', 'supervisor'], dashboard: ['admin', 'manager'], worker: ['admin', 'manager'], history: ['admin', 'manager'], follow: ['admin', 'manager', 'supervisor'], settings: ['admin'] };
 const canEdit = () => ['admin', 'supervisor'].includes(me()?.role);
 const roleName = u => u.title ? (LANG === 'ar' ? u.title : (u.titleEn || u.title)) : t(u.role);
 const isAdmin = () => me()?.role === 'admin';
@@ -434,7 +445,7 @@ const IC = {
   pause: '<rect x="7" y="5" width="3.5" height="14" rx="1" fill="currentColor"/><rect x="13.5" y="5" width="3.5" height="14" rx="1" fill="currentColor"/>',
   info: '<circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/>', x: '<path d="M6 6l12 12M18 6L6 18"/>',
 };
-const SVC_IC = { full_ppf: 'shield', half_ppf: 'half', quarter_ppf: 'quarter', color_change: 'palette', tint: 'sun', ceramic: 'drop', polish: 'spark', clean: 'clean', windshield: 'glass', replace: 'swap' };
+const SVC_IC = { full_ppf: 'shield', half_ppf: 'half', quarter_ppf: 'quarter', color_change: 'palette', tint: 'sun', ceramic: 'drop', polish: 'spark', clean: 'clean', service: 'clock', windshield: 'glass', replace: 'swap' };
 const ic = (n, cls = '') => `<svg class="i ${cls}" viewBox="0 0 24 24">${IC[n] || ''}</svg>`;
 
 /* ---------------- car diagram (top view, front at top) ---------------- */
@@ -495,11 +506,11 @@ function render() {
   let r = route();
   if (!ACCESS[r.name]) { location.replace('#/' + homeOf()); r = { name: homeOf() }; }
   if (!ACCESS[r.name].includes(u.role)) { location.replace('#/' + homeOf()); r = { name: homeOf() }; }
-  const views = { floor: viewFloor, new: viewNew, job: viewJob, dashboard: viewDashboard, worker: viewWorker, history: viewHistory, settings: viewSettings };
+  const views = { floor: viewFloor, new: viewNew, job: viewJob, dashboard: viewDashboard, worker: viewWorker, history: viewHistory, follow: viewFollow, settings: viewSettings };
   const v = views[r.name](r);
   const key = location.hash, same = key === lastRoute, y = window.scrollY;
   root().innerHTML = shell(r, v);
-  if (r.name === 'new') renderAssign();
+  if (r.name === 'new') { renderAssign(); plateHint(); }
   tick();
   lastRoute = key;
   window.scrollTo({ top: same ? y : 0 }); // stay in place when only the data changed (pause, sync…)
@@ -507,7 +518,8 @@ function render() {
 let lastRoute = null;
 function shell(r, v) {
   const u = me(), items = NAV.filter(n => n.roles.includes(u.role)), active = r.name === 'job' ? 'floor' : r.name === 'worker' ? 'dashboard' : r.name;
-  const navLinks = cls => items.map(n => `<a class="${cls} ${active === n.k ? 'on' : ''}" href="#/${n.k}">${ic(n.icon)}<span>${t(n.k)}</span></a>`).join('');
+  const fuN = fuDue().length;
+  const navLinks = cls => items.map(n => `<a class="${cls} ${active === n.k ? 'on' : ''}" href="#/${n.k}">${ic(n.icon)}<span>${t(n.k)}</span>${n.k === 'follow' && fuN ? `<i class="nav-badge num">${fuN}</i>` : ''}</a>`).join('');
   return `<div class="app">
     <aside class="side">
       <div class="brand"><img src="logo.png" alt="Insulator"><div><b>${t('app')}</b><small>${t('appSub')}</small></div></div>
@@ -653,6 +665,7 @@ function refresh() { const sh = $('.sheet'), wid = sh && sh.dataset.worker, part
 /* ---------------- new job ---------------- */
 let draft = null;
 function newDraft() { return { car: { make: '', model: '', year: '', color: '', plate: '', customer: '', phone: '', notes: '' }, services: [], assign: {}, tint: {}, tintAll: { film: '', shade: '' }, svc: null, worker: null }; }
+const svcGrid = () => SVC_CATS.map(c => `<div class="svc-cat"><div class="svc-cat-h">${ic(c.ic)}<b>${esc(nm(c))}</b>${c.hint ? `<small class="muted">· ${esc(nm(c.hint))}</small>` : ''}</div><div class="svc-grid">${c.svcs.map(k => svcBtn(SVC[k])).join('')}</div></div>`).join('');
 const svcBtn = s => `<button class="svc ${draft.services.includes(s.k) ? 'on' : ''}" data-act="svc" data-k="${s.k}"><span class="ic">${ic(SVC_IC[s.k])}</span><b>${esc(nm(s))}</b><span class="tick">${ic('check')}</span></button>`;
 // dropdown with an "Other" choice that reveals a text box (used for make and colour)
 const svcExtra = () => draft.services.includes('color_change') ? `<div class="form-grid" style="margin-top:14px">${selOther('newColor', COLORS.map(([ar, en]) => [ar, LANG === 'ar' ? ar : en]), t('typeColor'))}</div>` : '';
@@ -674,10 +687,11 @@ function viewNew() {
         <div class="field"><label>${t('year')}</label><select class="inp" data-car="year"><option value="">—</option>${YEARS.map(y => `<option ${c.year === y ? 'selected' : ''}>${y}</option>`).join('')}</select></div>
         ${selOther('color', COLORS.map(([ar, en]) => [ar, LANG === 'ar' ? ar : en]), t('typeColor'))}
         ${f('plate', 'text', 'inputmode="numeric"')}${f('customer')}${f('phone', 'tel')}
+        <div class="field wide" id="plate-hint"></div>
         <div class="field wide"><label>${t('notes')}</label><textarea class="inp" data-car="notes" rows="2">${esc(c.notes)}</textarea></div>
       </div></section>
     <section class="card"><h2>${ic('shield')}${t('services')}<small class="muted" style="font-weight:400">· ${t('chooseSvc')}</small></h2>
-      <div class="svc-grid">${SERVICES.map(svcBtn).join('')}</div><div id="svc-extra">${svcExtra()}</div></section>
+      <div id="svc-cats">${svcGrid()}</div><div id="svc-extra">${svcExtra()}</div></section>
     <section class="card" id="assign-zone"></section>
   </div>
   <div class="sticky-foot"><span class="sum" id="draft-sum"></span><button class="btn y lg" data-act="save-job">${ic('check')}${t('saveStart')}</button></div>`;
@@ -696,6 +710,7 @@ function renderAssign() {
   const svc = draft.svc, map = draft.assign[svc], g = SVC[svc].g, kind = dKind(svc), pool = poolOf(svc, kind), tl = isTintLike(svc, kind);
   const pref = SVC_TEAM(svc), workers = S.workers.filter(w => w.active && (draft.allW || teamOf(w) === pref)).sort((a, b) => (teamOf(a) !== pref) - (teamOf(b) !== pref));
   if (draft.worker && !workers.some(w => w.id === draft.worker)) draft.worker = null;
+  const one = pool.length === 1, onOne = wid => one && (map[pool[0]] || []).includes(wid);
   const cnt = wid => Object.values(draft.assign).reduce((a, m) => a + Object.values(m).filter(l => l.includes(wid)).length, 0);
   const aw = draft.worker && workerById(draft.worker);
   const films = S.films.filter(f => f.active && ['ppf', 'tint'].includes(f.type));
@@ -713,15 +728,15 @@ function renderAssign() {
         <div class="legend"><span><i class="lg-inc"></i>${t('lgInc')}</span><span><i class="lg-as"></i>${t('lgAs')}</span><span><i class="lg-off"></i>${t('lgOff')}</span></div>`}</div>
       <div>
         <div class="sec-h" style="margin:0 0 8px;font-size:14px">${ic('users')}${esc(nm(TEAMS[pref]))}<span class="grow"></span><button class="btn sm ghost" data-act="all-workers">${draft.allW ? t('teamOnly') : t('allWorkers')}</button></div>
-        <p class="hint">${ic('info')}${draft.worker ? t('pickWorker') : t('noWorkerSel')}</p>
-        <div class="wk-chips">${workers.map(w => `<button class="wk-chip ${draft.worker === w.id ? 'on' : ''}" style="--c:${wColor(w)}" data-act="pick-worker" data-id="${w.id}">${avatar(w, 'sm')}<span>${esc(wn(w))}</span><span class="cnt num">${cnt(w.id) || ''}</span></button>`).join('')}</div>
-        <div class="sec-h" style="margin:14px 0 10px;font-size:14px">${t('parts')}<span class="count num">${Object.keys(map).length}/${pool.length}</span></div>
+        <p class="hint">${ic('info')}${one ? t('tapWorkers') : draft.worker ? t('pickWorker') : t('noWorkerSel')}</p>
+        <div class="wk-chips">${workers.map(w => `<button class="wk-chip ${draft.worker === w.id || onOne(w.id) ? 'on' : ''}" style="--c:${wColor(w)}" data-act="pick-worker" data-id="${w.id}">${avatar(w, 'sm')}<span>${esc(wn(w))}</span><span class="cnt num">${cnt(w.id) || ''}</span></button>`).join('')}</div>
+        ${one ? '' : `<div class="sec-h" style="margin:14px 0 10px;font-size:14px">${t('parts')}<span class="count num">${Object.keys(map).length}/${pool.length}</span></div>
         <div class="parts-list">${pool.map(p => { const has = p in map, ws = has ? map[p].map(workerById).filter(Boolean) : [];
           return `<button class="part ${ws.length ? 'as' : has ? 'inc' : ''}" style="--c:${ws.length ? wColor(ws[0]) : ''}" data-act="part" data-part="${p}">${ws.length ? `<span class="avs">${ws.map(w => avatar(w, 'sm')).join('')}</span>` : ''}${esc(pName(p, svc))}</button>`; }).join('')}</div>
         <div class="quick">
           <button class="btn sm" data-act="parts-all">${t('all')}</button><button class="btn sm ghost" data-act="parts-clear">${t('clear')}</button>
           ${aw ? `<button class="btn sm" data-act="parts-rest">${t('assignRest')} ${esc(wn(aw))}</button>` : ''}
-        </div>
+        </div>`}
         ${tintBox}
       </div>
     </div>`;
@@ -752,6 +767,83 @@ function saveJob() {
   db.save(); draft = null; toast(t('saved')); go('#/job/' + job.id);
 }
 
+/* ---------------- car history + customer follow-up ---------------- */
+const plateKey = p => String(p || '').replace(/[\s\-_.]/g, '').toUpperCase();
+const visitsOf = plate => { const k = plateKey(plate); return k ? S.jobs.filter(o => plateKey(o.car.plate) === k).sort((a, b) => a.createdAt - b.createdAt) : []; };
+const FU_CHECK_D = 3, FU_SVC_M = 6;
+const waNum = p => { let d = String(p || '').replace(/\D/g, ''); if (d.startsWith('00')) d = d.slice(2); if (d.length === 8) d = '974' + d; return d; };
+// what needs a call now: 3 days after a car is finished (check-up) · 6 months after a car's last visit (service)
+function fuItems() {
+  const now = Date.now(), out = [], lastSeen = new Set();
+  [...S.jobs].sort((a, b) => b.createdAt - a.createdAt).forEach(j => {
+    if (j.status !== 'closed' || !j.closedAt || (j.demo && !DEMO_MODE && !S.demo)) return;
+    const fu = j.fu || {}, svcOnly = j.services.every(k => SVC[k] && SVC[k].g === 'srv');
+    // check-up: every finished job except a pure service visit; stop asking after 30 days
+    const dueC = j.closedAt + FU_CHECK_D * DAY;
+    if (!svcOnly && now >= dueC && now < dueC + 30 * DAY) out.push({ kind: 'check', j, due: dueC, done: fu.check, snooze: fu.checkSnooze });
+    // service: only the car's most recent visit counts
+    const key = plateKey(j.car.plate) || j.id; if (lastSeen.has(key)) return; lastSeen.add(key);
+    const last = j.closedAt, dueS = new Date(last); dueS.setMonth(dueS.getMonth() + FU_SVC_M);
+    if (now >= dueS.getTime()) out.push({ kind: 'svc', j, due: dueS.getTime(), done: fu.svc, snooze: fu.svcSnooze });
+  });
+  return out.sort((a, b) => a.due - b.due);
+}
+const fuDue = () => fuItems().filter(i => !i.done && !(i.snooze && i.snooze > Date.now()));
+function waText(i) {
+  const j = i.j, name = j.car.customer ? ' ' + j.car.customer : '', car = carTitle(j);
+  return i.kind === 'check' ? `مرحباً${name}، معك ${S.settings.shop || 'Insulator'}. نتمنى إن شغل سيارتك ${car} عاجبك 🌟 حياك تمرّ علينا للتشييك على السيارة، متى يناسبك؟`
+    : `مرحباً${name}، معك ${S.settings.shop || 'Insulator'}. صار لسيارتك ${car} ${FU_SVC_M} أشهر من آخر زيارة، وحان وقت السيرفيس 🚗✨ متى يناسبك نحجز لك موعد؟`;
+}
+function fuCard(i) {
+  const j = i.j, v = visitsOf(j.car.plate).length || 1, ph = j.car.phone, sup = me().role === 'supervisor', late = Math.floor((Date.now() - i.due) / DAY);
+  const head = sup ? `<b>${esc(carTitle(j))}</b>` : `<a href="#/job/${j.id}"><b>${esc(carTitle(j))}</b></a>`;
+  const d = i.done && userById(i.done.by);
+  return `<div class="fu-card ${i.kind} ${i.done ? 'done' : ''}">
+    <div class="fu-top"><span class="fu-k">${ic(i.kind === 'check' ? 'check' : 'clock')}${t(i.kind === 'check' ? 'fuCheck' : 'fuSvc')}</span>${!i.done && late > 0 ? `<span class="chip r num">${t('fuLate', late)}</span>` : ''}<span class="grow"></span>${j.car.plate ? `<span class="plate">${esc(j.car.plate)}</span>` : ''}</div>
+    <div class="fu-main">${head}<small class="muted">${j.car.customer ? esc(j.car.customer) + ' · ' : ''}${j.services.map(k => nm(SVC[k])).join('، ')}</small>
+      <small class="muted num">${t('fuFinished')}: ${fDate(j.closedAt)} · ${v > 1 ? t('visitsN', v) : t('firstVisit')}</small></div>
+    ${i.done ? `<div class="fu-done">${ic('check')}${t('fuDoneBy', d ? un(d) : '—', fDate(i.done.at))}</div>`
+      : `<div class="fu-act">${ph ? `<a class="btn g" href="tel:${esc(ph)}">${ic('phone')}${t('call')}</a><a class="btn" href="https://wa.me/${waNum(ph)}?text=${encodeURIComponent(waText(i))}" target="_blank" rel="noopener">${t('whatsapp')}</a>` : `<span class="muted" style="font-size:13px">${t('noPhone')}</span>`}
+        <span class="grow"></span><button class="btn ghost sm" data-act="fu-snooze" data-id="${j.id}" data-k="${i.kind}">${t('fuLater')}</button><button class="btn y sm" data-act="fu-done" data-id="${j.id}" data-k="${i.kind}">${ic('check')}${t('fuContacted')}</button></div>`}
+  </div>`;
+}
+function viewFollow() {
+  const all = fuItems(), due = all.filter(i => !i.done && !(i.snooze && i.snooze > Date.now())), later = all.filter(i => !i.done && i.snooze && i.snooze > Date.now()), done = all.filter(i => i.done).sort((a, b) => b.done.at - a.done.at).slice(0, 15);
+  const html = `<p class="muted" style="margin:0 0 14px">${t('fuIntro', FU_CHECK_D, FU_SVC_M)}</p>
+    <div class="sec-h">${ic('phone')}${t('fuNow')}<span class="count num">${due.length}</span></div>
+    ${due.length ? `<div class="fu-list">${due.map(fuCard).join('')}</div>` : `<div class="empty">${ic('check')}<div>${t('fuNone')}</div></div>`}
+    ${later.length ? `<div class="sec-h">${ic('clock')}${t('fuSnoozed')}<span class="count num">${later.length}</span></div><div class="fu-list">${later.map(fuCard).join('')}</div>` : ''}
+    ${done.length ? `<div class="sec-h">${ic('check')}${t('fuDoneList')}<span class="count num">${done.length}</span></div><div class="fu-list">${done.map(fuCard).join('')}</div>` : ''}`;
+  return { title: t('follow'), sub: t('fuSub'), html };
+}
+function fuMark(id, kind, snooze) {
+  const j = jobById(id); if (!j) return; j.fu = j.fu || {};
+  if (snooze) j.fu[kind + 'Snooze'] = Date.now() + 7 * DAY; else j.fu[kind] = { at: Date.now(), by: me().id };
+  db.save(); toast(snooze ? t('fuSnoozedT') : t('fuDoneT')); render();
+}
+// car page: every visit of this car
+function visitsCard(j) {
+  const vs = visitsOf(j.car.plate); if (vs.length < 2) return '';
+  const sup = me().role === 'supervisor';
+  return `<section class="card visits"><div class="cm-h">${ic('history')}<b>${t('carHistory')}</b><span class="chip y num">${t('visitsN', vs.length)}</span></div>
+    ${vs.slice().reverse().map((o, i) => { const row = `<span class="num">${fDate(o.createdAt)}</span><span>${o.services.map(k => nm(SVC[k])).join('، ')}</span>${o.id === j.id ? `<span class="chip">${t('thisVisit')}</span>` : ''}`;
+      return o.id === j.id || sup ? `<div class="v-row ${o.id === j.id ? 'cur' : ''}">${row}</div>` : `<a class="v-row" href="#/job/${o.id}">${row}${ic('next', 'flip muted')}</a>`; }).join('')}</section>`;
+}
+// new-car page: the plate was seen before → show visits and offer to fill the car details
+function plateHint() {
+  const el = $('#plate-hint'); if (!el || !draft) return;
+  const vs = visitsOf(draft.car.plate); if (!vs.length || plateKey(draft.car.plate).length < 3) { el.innerHTML = ''; return; }
+  const last = vs[vs.length - 1];
+  el.innerHTML = `<div class="plate-hint">${ic('history')}<div class="grow"><b>${t('seenBefore', vs.length)}</b><small class="muted">${t('lastVisit')}: ${fDate(last.createdAt)} · ${esc(carTitle(last))} · ${last.services.map(k => nm(SVC[k])).join('، ')}</small></div><button class="btn sm y" data-act="fill-car">${t('fillCar')}</button></div>`;
+}
+function fuAlertCheck() {
+  if (!me() || (window.cloud && !cloud.linked)) return;
+  const n = fuDue().length, day = new Date().toDateString(), key = 'ins_fu_alert_' + (me().id);
+  if (!n) return; let last = null; try { last = localStorage.getItem(key); } catch { }
+  if (last === day || seen.f === day) return; seen.f = day; try { localStorage.setItem(key, day); } catch { }
+  alertUser(t('fuAlert', n), `<button class="btn sm g" data-act="fu-open">${ic('phone')}${t('fuOpen')}</button>`);
+}
+
 /* ---------------- job page ---------------- */
 function viewJob(r) {
   const j = jobById(r.id), u = me();
@@ -770,6 +862,7 @@ function viewJob(r) {
         ${j.car.notes ? `<p class="muted" style="margin:12px 0 0;font-size:13.5px">${esc(j.car.notes)}</p>` : ''}</div>
       <div class="ring" style="--p:${pct}"><div><b class="num">${pct}%</b><small>${done.length}/${ts.length}</small></div></div>
     </section>
+    ${visitsCard(j)}
     <div class="job-split">${carMap(j, ts)}
     <div class="plan-list">${order.map(wid => { const w = workerById(wid), list = groups[wid].sort((a, b) => (a.end ? 2 : a.start ? 0 : 1) - (b.end ? 2 : b.start ? 0 : 1));
       const wl = list.filter(x => x.end).reduce((a, x) => a + dur(x), 0);
@@ -1267,6 +1360,10 @@ const ACTS = {
   pin: el => pinPress(el.dataset.n),
   'sheet-bg': (el, e) => { if (e.target === el) closeSheet(); }, 'close-sheet': closeSheet,
   'worker-sheet': el => workerSheet(el.dataset.id),
+  'fu-open': () => { const ab = document.getElementById('alert-bar'); if (ab) ab.innerHTML = ''; go('#/follow'); },
+  'fu-done': el => fuMark(el.dataset.id, el.dataset.k),
+  'fu-snooze': el => fuMark(el.dataset.id, el.dataset.k, true),
+  'fill-car': () => { const vs = visitsOf(draft.car.plate), last = vs[vs.length - 1]; if (!last) return; ['make', 'model', 'year', 'color', 'customer', 'phone'].forEach(k => { if (last.car[k]) draft.car[k] = last.car[k]; }); if (!draft.services.length && SVC.service) { draft.services.push('service'); draft.assign.service = { whole: [] }; draft.svc = 'service'; } render(); toast(t('filled')); },
   'ot-toggle': () => { S.settings.otDay = isOT() ? '' : new Date().toDateString(); db.save(); toast(isOT() ? t('otOn', S.settings.otResume || '13:00') : t('otOff')); render(); },
   'part-sheet': el => partSheet(el.dataset.job, el.dataset.part),
   'part-finish': el => partAll(el.dataset.job, el.dataset.part, 'finish'),
@@ -1279,10 +1376,12 @@ const ACTS = {
     if (i < 0 && film(k)) draft.services.filter(o => o !== k && film(o)).forEach(o => { draft.services.splice(draft.services.indexOf(o), 1); delete draft.assign[o]; }); // full / half / quarter: only one
     if (i >= 0) { draft.services.splice(i, 1); delete draft.assign[k]; }
     else { draft.services.push(k); draft.assign[k] = Object.fromEntries(SVC[k].parts.map(p => [p, []])); if (isTintLike(k, dKind(k))) SVC[k].parts.forEach(p => draft.tint[p] = draft.tint[p] || { ...draft.tintAll }); draft.svc = k; }
-    $('.svc-grid').innerHTML = SERVICES.map(svcBtn).join(''); $('#svc-extra').innerHTML = svcExtra(); renderAssign(); },
+    $('#svc-cats').innerHTML = svcGrid(); $('#svc-extra').innerHTML = svcExtra(); renderAssign(); },
   'all-workers': () => { draft.allW = !draft.allW; renderAssign(); },
   'svc-tab': el => { draft.svc = el.dataset.k; renderAssign(); },
-  'pick-worker': el => { draft.worker = draft.worker === el.dataset.id ? null : el.dataset.id; renderAssign(); },
+  'pick-worker': el => { const id = el.dataset.id, svc = draft.svc, pool = svc ? poolOf(svc, dKind(svc)) : [];
+    if (pool.length === 1) { const m = draft.assign[svc], p = pool[0], a = m[p] = m[p] || [], i = a.indexOf(id); i >= 0 ? a.splice(i, 1) : a.push(id); draft.worker = null; return renderAssign(); } // whole car: just tap who works on it
+    draft.worker = draft.worker === id ? null : id; renderAssign(); },
   part: el => togglePart(el.dataset.part),
   'repl-kind': el => { (draft.kind = draft.kind || {})[draft.svc] = el.dataset.k; if (SVC[draft.svc].g === 'rep') draft.assign[draft.svc] = {}; renderAssign(); },
   'parts-all': () => { const m = draft.assign[draft.svc]; poolOf(draft.svc, dKind(draft.svc)).forEach(p => { if (!(p in m)) { m[p] = draft.worker ? [draft.worker] : []; if (isTintLike(draft.svc, dKind(draft.svc))) draft.tint[p] = draft.tint[p] || { ...draft.tintAll }; } }); renderAssign(); },
@@ -1368,7 +1467,7 @@ document.addEventListener('click', e => {
 document.addEventListener('change', e => { if (e.target.tagName === 'SELECT' && e.target.dataset.car && draft) draft.car[e.target.dataset.car] = e.target.value; const el = e.target.closest('[data-act-change]'); if (el && CHANGES[el.dataset.actChange]) CHANGES[el.dataset.actChange](el, e); });
 document.addEventListener('input', e => {
   const el = e.target;
-  if (el.dataset.car && draft) draft.car[el.dataset.car] = el.value;
+  if (el.dataset.car && draft) { draft.car[el.dataset.car] = el.value; if (el.dataset.car === 'plate') plateHint(); }
   if (el.id === 'hist-q') { histQ = el.value; $('#hist-list').innerHTML = histList(); }
 });
 document.addEventListener('submit', e => { const f = e.target.closest('[data-form]'); if (!f) return; e.preventDefault(); FORMS[f.dataset.form](f); });
@@ -1415,7 +1514,7 @@ let lastAct = Date.now(), tickN = 0;
 function tick() { const now = Date.now(); $$('[data-since]').forEach(el => el.textContent = fClock(now - +el.dataset.since)); }
 setInterval(() => {
   tick();
-  if (++tickN % 15 === 1) breakCheck();
+  if (++tickN % 15 === 1) { breakCheck(); fuAlertCheck(); }
   if (me() && Date.now() - lastAct > (+S.settings.autoLock || 10) * 60000) logout();
 }, 1000);
 window.addEventListener('storage', e => { if (e.key === STORE_KEY) { db.load(); render(); } }); // keep several tabs in sync
