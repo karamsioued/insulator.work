@@ -76,13 +76,14 @@ const SERVICES = [
   { k: 'tint', g: 'tint', ar: 'عازل حراري', en: 'Window tint', parts: ['windshield', 'rear_glass', 'win_fl', 'win_fr', 'win_rl', 'win_rr'] },
   { k: 'ceramic', g: 'cer', ar: 'نانو سيراميك', en: 'Ceramic coating', parts: ['whole'] },
   { k: 'polish', g: 'pol', ar: 'بوليش', en: 'Polish', parts: ['whole'] },
+  { k: 'clean', g: 'cln', ar: 'تنظيف', en: 'Cleaning', parts: ['whole'] }, // after PPF — done by the polish team
   { k: 'windshield', g: 'jam', ar: 'الجامة الأمامية', en: 'Front windshield', parts: ['windshield'] },
   { k: 'replace', g: 'rep', ar: 'تغيير قطع', en: 'Panel replacement', parts: [] },
 ];
 const SVC = Object.fromEntries(SERVICES.map(s => [s.k, s]));
 const FILM_TYPES = { ppf: { ar: 'حماية PPF', en: 'PPF film' }, tint: { ar: 'عازل حراري', en: 'Window film' }, wrap: { ar: 'تغيير لون', en: 'Color wrap' }, cer: { ar: 'سيراميك', en: 'Ceramic' } };
 // kind = 'ppf' | 'tint' — only used by "panel replacement", where the supervisor picks which one first
-const poolOf = (svc, kind) => { const g = SVC[svc].g; return g === 'tint' ? GLASS : g === 'jam' ? ['windshield'] : g === 'rep' ? (kind === 'tint' ? GLASS : BODY) : (g === 'cer' || g === 'pol') ? ['whole'] : BODY; };
+const poolOf = (svc, kind) => { const g = SVC[svc].g; return g === 'tint' ? GLASS : g === 'jam' ? ['windshield'] : g === 'rep' ? (kind === 'tint' ? GLASS : BODY) : (g === 'cer' || g === 'pol' || g === 'cln') ? ['whole'] : BODY; };
 const isTintLike = (svc, kind) => { const g = SVC[svc].g; return g === 'tint' || g === 'jam' || (g === 'rep' && kind === 'tint'); };
 // services with a sub-type picked first: panel replacement (tint/PPF) and polish (exterior/interior/both)
 const KINDS = { rep: ['tint', 'ppf'], pol: ['ext', 'int', 'both'] };
@@ -92,7 +93,7 @@ const kindLabel = k => t({ tint: 'replTint', ppf: 'replPpf', ext: 'polExt', int:
 const needShade = () => false; // owner: tint needs neither shade nor film
 const needFilm = svc => SVC[svc].g === 'jam'; // the windshield service only needs the film type
 const dKind = svc => (draft && draft.kind && draft.kind[svc]) || KIND_DEF[SVC[svc].g] || 'ppf';
-const SVC_TEAM = svc => (SVC[svc].g === 'cer' || SVC[svc].g === 'pol') ? 'polish' : 'ppf';
+const SVC_TEAM = svc => ['cer', 'pol', 'cln'].includes(SVC[svc].g) ? 'polish' : 'ppf';
 const PALETTE = ['#FBBF15', '#5FB4FF', '#2FD896', '#FF7A59', '#B98CFF', '#FF5D9E', '#6FE3D0', '#F2E863', '#9DB4FF', '#FFA94D'];
 // Brands ordered by how common they are on Qatar roads; models list Qatar trims. Anything else → "Other".
 const MODELS = {
@@ -258,6 +259,9 @@ const db = {
     if (!S.settings.breakStart) { Object.assign(S.settings, { breakStart: '12:00', breakEnd: '16:00', breakWarn: 5 }); mig = true; }
     if (!S.settings.shiftEnd) { Object.assign(S.settings, { shiftStart: '09:00', shiftEnd: '21:00', otResume: '13:00' }); mig = true; }
     if (!S.mig.split1) { const out = []; S.tasks.forEach(x => { const ws = wids(x); if (ws.length <= 1) return out.push(x); const grp = x.id; ws.forEach((w, i) => out.push(i ? { ...x, id: x.id + '_' + i, workerIds: [w], grp, share: ws.length } : Object.assign(x, { workerIds: [w], grp, share: ws.length }))); }); S.tasks = out; S.mig.split1 = true; mig = true; }
+    if (!S.mig.omar) { const sup = S.users.find(u => u.id === 'u_sup'); if (sup && sup.name === 'المشرف') Object.assign(sup, { name: 'عبد السلام', nameEn: 'Abdulsalam', title: 'المشرف', titleEn: 'Supervisor' });
+      if (!S.users.some(u => u.name === 'عمر')) { const taken = S.users.some(u => u.pin === H('1234')); S.users.push({ id: 'u_omar', name: 'عمر', nameEn: 'Omar', title: 'المشرف', titleEn: 'Supervisor', role: 'supervisor', pin: H(taken ? '4321' : '1234'), active: true }); }
+      S.mig.omar = true; mig = true; }
     if (!S.mig.wael) { if (!S.users.some(u => u.name === 'وائل')) S.users.push({ id: 'u_wael', name: 'وائل', nameEn: 'Wael', title: 'المدير التجاري', titleEn: 'Commercial manager', role: 'manager', pin: H('3333'), active: true }); S.mig.wael = true; mig = true; }
     S.workers.forEach(w => { if (!w.photo) { const r = ROSTER.find(r => r.name === w.name); if (r && r.photo) { w.photo = r.photo; mig = true; } } }); if (mig) db.save();
     if ((S.rosterV || 1) < ROSTER_V) { // replace the old demo team with the real one, keep anything the owner added
@@ -272,7 +276,8 @@ function seed() {
     v: 1, demo: true,
     users: [
       { id: 'u_admin', name: 'Karam', role: 'admin', pin: H('0000'), active: true },
-      { id: 'u_sup', name: 'المشرف', nameEn: 'Supervisor', role: 'supervisor', pin: H('1111'), active: true },
+      { id: 'u_sup', name: 'عبد السلام', nameEn: 'Abdulsalam', title: 'المشرف', titleEn: 'Supervisor', role: 'supervisor', pin: H('1111'), active: true },
+      { id: 'u_omar', name: 'عمر', nameEn: 'Omar', title: 'المشرف', titleEn: 'Supervisor', role: 'supervisor', pin: H('1234'), active: true },
       { id: 'u_mgr', name: 'المدير', nameEn: 'Manager', role: 'manager', pin: H('2222'), active: true },
     ],
     workers: roster(), rosterV: ROSTER_V,
@@ -321,7 +326,7 @@ function makeDemo(s) {
     for (let c = 0; c < n; c++) {
       const [make, model] = pick(cars), created = dayStart + c * 55 * 60000, services = [...pick(combos)];
       if (!services.some(k => ['polish', 'ceramic'].includes(k)) && rnd() < .4) services.push('polish');
-      const job = { id: 'demo' + d + '_' + c + uid().slice(-3), createdAt: created, createdBy: 'u_sup', status: 'open', closedAt: null, services, films: {}, demo: true,
+      const job = { id: 'demo' + d + '_' + c + uid().slice(-3), createdAt: created, createdBy: rnd() < .5 ? 'u_sup' : 'u_omar', status: 'open', closedAt: null, services, films: {}, demo: true,
         car: { make, model, year: pick(['2023', '2024', '2025', '2026']), color: pick(colors), plate: String(100000 + Math.floor(rnd() * 899999)), customer: pick(names), phone: '', notes: '' } };
       if (services.includes('color_change')) job.car.newColor = pick(colors.filter(x => x !== job.car.color));
       const crewP = [...ppf].sort(() => rnd() - .5).slice(0, 2 + Math.floor(rnd() * 3)), crewL = [pol[polN++ % pol.length], pol[(polN + 2) % pol.length]];
@@ -341,7 +346,7 @@ function makeDemo(s) {
         });
       };
       services.forEach(k => {
-        if (SVC[k].g === 'pol' || SVC[k].g === 'cer') return add(k, 'whole', rnd() < .3 && crewL.length > 1 ? crewL : [crewL[0]], k === 'polish' ? { kind: pick(['ext', 'ext', 'int', 'both']) } : {});
+        if (['pol', 'cer', 'cln'].includes(SVC[k].g)) return add(k, 'whole', rnd() < .3 && crewL.length > 1 ? crewL : [crewL[0]], k === 'polish' ? { kind: pick(['ext', 'ext', 'int', 'both']) } : {});
         SVC[k].parts.forEach(p => { const w = crewP[i++ % crewP.length]; const pair = ['fbumper', 'rbumper', 'roof', 'hood'].includes(p) && crewP.length > 1 && rnd() < .55; add(k, p, pair ? [w, crewP.find(x => x !== w)] : [w]); });
       });
       if (allDone) { job.status = 'closed'; job.closedAt = last + 25 * 60000; }
@@ -365,7 +370,7 @@ const DIFFICULTY = { fbumper: 2, rbumper: 1.85, quarter_l: 1.7, quarter_r: 1.7, 
 const QUARTER_HALF = ['hood', 'fender_l', 'fender_r'];
 const isHalfPart = (svc, part) => svc === 'quarter_ppf' && QUARTER_HALF.includes(part);
 const pName = (part, svc) => nm(PARTS[part]) + (isHalfPart(svc, part) ? ' (' + t('halfPart') + ')' : '');
-const ptsOf = x => (DIFFICULTY[x.part] || 1) * (SVC[x.service].g === 'wrap' ? 1.5 : 1) * (isHalfPart(x.service, x.part) ? .5 : 1) * (SVC[x.service].g === 'pol' ? ({ int: .8, both: 1.6 }[x.kind] || 1) : 1);
+const ptsOf = x => (DIFFICULTY[x.part] || 1) * (SVC[x.service].g === 'wrap' ? 1.5 : 1) * (isHalfPart(x.service, x.part) ? .5 : 1) * (SVC[x.service].g === 'pol' ? ({ int: .8, both: 1.6 }[x.kind] || 1) : 1) * (SVC[x.service].g === 'cln' ? .5 : 1); // cleaning = half a polish
 const fN = v => Number.isInteger(v) ? String(v) : v.toFixed(1);
 const un = u => u ? (LANG === 'en' && u.nameEn ? u.nameEn : u.name) : '';
 const wn = w => w ? (LANG === 'en' && w.nameEn ? w.nameEn : w.name) : '';
@@ -418,6 +423,7 @@ const IC = {
   trophy: '<path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0z"/><path d="M17 5h3v2a3 3 0 0 1-3 3M7 5H4v2a3 3 0 0 0 3 3"/>',
   phone: '<path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2z"/>', search: '<circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/>',
   shield: '<path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/>', sun: '<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>',
+  clean: '<path d="M14 3l-4 9"/><path d="M6 12h10l2 9H4l2-9z"/><path d="M9 16v5M13 16v5"/>',
   drop: '<path d="M12 3s6 6.5 6 11a6 6 0 0 1-12 0c0-4.5 6-11 6-11z"/>', palette: '<path d="M12 3a9 9 0 1 0 0 18c1 0 1.5-.8 1.5-1.5 0-1.2-1-1.5-1-2.5s.8-1.5 2-1.5H17a4 4 0 0 0 4-4c0-4.7-4-8.5-9-8.5z"/><circle cx="7.5" cy="11" r="1"/><circle cx="10" cy="7" r="1"/><circle cx="15" cy="7.5" r="1"/>',
   half: '<path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/><path d="M12 3v18" /><path d="M12 6l6 2.2V12c0 3.6-2.4 6-6 6.8z" fill="currentColor" stroke="none"/>',
   quarter: '<path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/><path d="M12 3v9h8" /><path d="M12 5.2l6 2.2V11h-6z" fill="currentColor" stroke="none"/>',
@@ -428,7 +434,7 @@ const IC = {
   pause: '<rect x="7" y="5" width="3.5" height="14" rx="1" fill="currentColor"/><rect x="13.5" y="5" width="3.5" height="14" rx="1" fill="currentColor"/>',
   info: '<circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/>', x: '<path d="M6 6l12 12M18 6L6 18"/>',
 };
-const SVC_IC = { full_ppf: 'shield', half_ppf: 'half', quarter_ppf: 'quarter', color_change: 'palette', tint: 'sun', ceramic: 'drop', polish: 'spark', windshield: 'glass', replace: 'swap' };
+const SVC_IC = { full_ppf: 'shield', half_ppf: 'half', quarter_ppf: 'quarter', color_change: 'palette', tint: 'sun', ceramic: 'drop', polish: 'spark', clean: 'clean', windshield: 'glass', replace: 'swap' };
 const ic = (n, cls = '') => `<svg class="i ${cls}" viewBox="0 0 24 24">${IC[n] || ''}</svg>`;
 
 /* ---------------- car diagram (top view, front at top) ---------------- */
@@ -760,7 +766,7 @@ function viewJob(r) {
       <div><h2>${esc(carTitle(j))}</h2>
         <div class="chips" style="margin-bottom:12px">${j.car.plate ? `<span class="plate">${esc(j.car.plate)}</span>` : ''}${j.services.map(k => `<span class="chip y">${esc(nm(SVC[k]))}</span>`).join('')}<span class="chip ${j.status === 'open' ? '' : 'g'}">${t(j.status)}</span></div>
         <div class="facts">${j.car.color || j.car.newColor ? `<span>${ic('palette')}${esc(j.car.color || '—')}${j.car.newColor ? ` → <b>${esc(j.car.newColor)}</b>` : ''}</span>` : ''}${j.car.customer ? `<span>${ic('user')}${esc(j.car.customer)}</span>` : ''}${j.car.phone ? `<a href="tel:${esc(j.car.phone)}"><span>${ic('phone')}<span class="num" dir="ltr">${esc(j.car.phone)}</span></span></a>` : ''}
-          <span>${ic('clock')}${fDT(j.createdAt)}</span>${by ? `<span>${t('createdBy')}: ${esc(un(by))}</span>` : ''}${labor ? `<span>${t('laborTime')}: <b class="num">${fDur(labor)}</b></span>` : ''}</div>
+          <span>${ic('clock')}${fDT(j.createdAt)}</span>${by && u.role !== 'supervisor' ? `<span>${ic('user')}${t('createdBy')}: <b>${esc(un(by))}</b></span>` : ''}${labor ? `<span>${t('laborTime')}: <b class="num">${fDur(labor)}</b></span>` : ''}</div>
         ${j.car.notes ? `<p class="muted" style="margin:12px 0 0;font-size:13.5px">${esc(j.car.notes)}</p>` : ''}</div>
       <div class="ring" style="--p:${pct}"><div><b class="num">${pct}%</b><small>${done.length}/${ts.length}</small></div></div>
     </section>
@@ -1119,7 +1125,7 @@ function histList() {
   if (!jobs.length) return `<div class="empty">${t('noJobs')}</div>`;
   return jobs.map(j => { const ts = tasksOf(j.id), done = ts.filter(x => x.end), labT = done.reduce((a, x) => a + lab(x), 0);
     return `<a class="l-item" href="#/job/${j.id}"><span class="av" style="--c:${j.status === 'open' ? '#FBBF15' : '#2FD896'}">${ic(j.status === 'open' ? 'clock' : 'check')}</span>
-      <div class="grow"><b>${esc(carTitle(j))} ${j.car.plate ? `<span class="plate" style="margin-inline-start:6px">${esc(j.car.plate)}</span>` : ''}</b><small class="num">${fDT(j.createdAt)} · ${j.services.map(k => nm(SVC[k])).join('، ')}</small></div>
+      <div class="grow"><b>${esc(carTitle(j))} ${j.car.plate ? `<span class="plate" style="margin-inline-start:6px">${esc(j.car.plate)}</span>` : ''}</b><small class="num">${fDT(j.createdAt)} · ${j.services.map(k => nm(SVC[k])).join('، ')}${userById(j.createdBy) ? ` · ${t('createdBy')}: <b>${esc(un(userById(j.createdBy)))}</b>` : ''}</small></div>
       <div style="text-align:end"><b class="num">${fDur(labT)}</b><br><small class="muted num">${done.length}/${ts.length}</small></div></a>`; }).join('');
 }
 
