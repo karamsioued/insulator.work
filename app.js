@@ -78,6 +78,7 @@ const SERVICES = [
   { k: 'polish', g: 'pol', ar: 'بوليش', en: 'Polish', parts: ['whole'] },
   { k: 'clean', g: 'cln', ar: 'تنظيف', en: 'Cleaning', parts: ['whole'] }, // after PPF — done by the polish team
   { k: 'windshield', g: 'jam', ar: 'تركيب الجامة', en: 'Windshield install', parts: ['windshield'] },
+  { k: 'tint_off', g: 'tintx', ar: 'نزع العازل', en: 'Tint removal', parts: ['windshield', 'rear_glass', 'win_fl', 'win_fr', 'win_rl', 'win_rr'] }, // any worker, like windshield removal
   { k: 'windshield_off', g: 'jamx', ar: 'نزع الجامة', en: 'Windshield removal', parts: ['windshield'] }, // any worker — PPF or polish team
   { k: 'checkup', g: 'chk', ar: 'تشييك', en: 'Check-up', parts: ['whole'] }, // the 3-day check after a new job
   { k: 'service', g: 'srv', ar: 'سيرفيس', en: 'Service visit', parts: ['whole'] }, // a car we worked on before: just pick the workers
@@ -87,15 +88,15 @@ const SVC = Object.fromEntries(SERVICES.map(s => [s.k, s]));
 // how the new-car page groups the services
 const SVC_CATS = [
   { k: 'ppf', ic: 'shield', ar: 'الحماية', en: 'PPF', svcs: ['full_ppf', 'half_ppf', 'quarter_ppf', 'color_change'], hint: { ar: 'خيار واحد فقط', en: 'one only' } },
-  { k: 'tint', ic: 'sun', ar: 'العازل الحراري', en: 'Tint', svcs: ['tint', 'windshield', 'windshield_off'] },
+  { k: 'tint', ic: 'sun', ar: 'العازل الحراري', en: 'Tint', svcs: ['tint', 'tint_off', 'windshield', 'windshield_off'] },
   { k: 'pol', ic: 'spark', ar: 'البوليش', en: 'Polish', svcs: ['polish', 'ceramic', 'clean'] },
   { k: 'rep', ic: 'swap', ar: 'تغيير القطع', en: 'Panel replacement', svcs: ['replace'] },
   { k: 'srv', ic: 'clock', ar: 'سيرفيس', en: 'Service', svcs: ['service', 'checkup'], hint: { ar: 'لسيارة اشتغلنا عليها من قبل', en: 'for a car we worked on before' } },
 ];
 const FILM_TYPES = { ppf: { ar: 'حماية PPF', en: 'PPF film' }, tint: { ar: 'عازل حراري', en: 'Window film' }, wrap: { ar: 'تغيير لون', en: 'Color wrap' }, cer: { ar: 'سيراميك', en: 'Ceramic' } };
 // kind = 'ppf' | 'tint' — only used by "panel replacement", where the supervisor picks which one first
-const poolOf = (svc, kind) => { const g = SVC[svc].g; return g === 'tint' ? GLASS : (g === 'jam' || g === 'jamx') ? ['windshield'] : g === 'rep' ? (kind === 'tint' ? GLASS : BODY) : (g === 'cer' || g === 'pol' || g === 'cln' || g === 'srv' || g === 'chk') ? ['whole'] : BODY; };
-const isTintLike = (svc, kind) => { const g = SVC[svc].g; return g === 'tint' || g === 'jam' || g === 'jamx' || (g === 'rep' && kind === 'tint'); };
+const poolOf = (svc, kind) => { const g = SVC[svc].g; return (g === 'tint' || g === 'tintx') ? GLASS : (g === 'jam' || g === 'jamx') ? ['windshield'] : g === 'rep' ? (kind === 'tint' ? GLASS : BODY) : (g === 'cer' || g === 'pol' || g === 'cln' || g === 'srv' || g === 'chk') ? ['whole'] : BODY; };
+const isTintLike = (svc, kind) => { const g = SVC[svc].g; return g === 'tint' || g === 'tintx' || g === 'jam' || g === 'jamx' || (g === 'rep' && kind === 'tint'); };
 // services with a sub-type picked first: panel replacement (tint/PPF) and polish (exterior/interior/both)
 const KINDS = { rep: ['tint', 'ppf'], pol: ['ext', 'int', 'both'] };
 const KIND_DEF = { rep: 'ppf', pol: 'ext' };
@@ -104,7 +105,7 @@ const kindLabel = k => t({ tint: 'replTint', ppf: 'replPpf', ext: 'polExt', int:
 const needShade = () => false; // owner: tint needs neither shade nor film
 const needFilm = svc => SVC[svc].g === 'jam'; // the windshield service only needs the film type
 const dKind = svc => (draft && draft.kind && draft.kind[svc]) || KIND_DEF[SVC[svc].g] || 'ppf';
-const SVC_TEAM = svc => SVC[svc].g === 'jamx' ? 'all' : ['cer', 'pol', 'cln'].includes(SVC[svc].g) ? 'polish' : 'ppf';
+const SVC_TEAM = svc => ['jamx', 'tintx'].includes(SVC[svc].g) ? 'all' : ['cer', 'pol', 'cln'].includes(SVC[svc].g) ? 'polish' : 'ppf';
 const inTeam = (w, team) => team === 'all' || teamOf(w) === team;
 const PALETTE = ['#FBBF15', '#5FB4FF', '#2FD896', '#FF7A59', '#B98CFF', '#FF5D9E', '#6FE3D0', '#F2E863', '#9DB4FF', '#FFA94D'];
 // Brands ordered by how common they are on Qatar roads; models list Qatar trims. Anything else → "Other".
@@ -185,7 +186,7 @@ const T = {
     ranking: 'ترتيب الإنتاجية', score: 'التقييم', cars: 'سيارات', hours: 'ساعات', eff: 'الكفاءة', util: 'الاستغلال', avgCar: 'متوسط/سيارة',
     daily: 'العمل اليومي (ساعات)', svcMix: 'توزيع الخدمات', partTimes: 'متوسط وقت كل قطعة', avg: 'المتوسط', best: 'الأسرع', count: 'العدد',
     how: 'كيف يُحسب التقييم؟',
-    howTxt: '<b>الترتيب</b> يحسب القطع المنتهية فقط. القطعة الجارية تدخل عند الإنهاء. <b>القطعة المشتركة</b> تُحسب كنتيجة فريق واحد: كل عامل عليها ياخذ نفس الحصة من النقاط ونفس متوسط وقت الفريق، فاللي اشتغلوا نفس الشغل مع بعض ياخذون نفس التقييم حتى لو عداد واحد منهم اشتغل أطول. <b>الكفاءة</b> تميل لـ 100% لما تكون القطع قليلة وتتوضح كل ما زاد الشغل، والعلامة الحمراء ما تظهر إلا بعد ما يكون عند كل عامل تقريباً 3 قطع. اللي ما أنهى أي قطعة بعد يظهر بـ «—».<br><br><b>الوقت</b> = وقت العمل الفعلي فقط — فترات الإيقاف المؤقت (نهاية الدوام، الاستراحة) لا تُحسب.<br><b>النقاط (حجم العمل)</b> = كل قطعة لها درجة صعوبة: الصدام الأمامي 3.5، الصدام الخلفي 3.2 (ياخذون وقت طويل وفيهم قطع كثيرة)، الرفرف الخلفي 1.7، السقف 1.6، الكبوت 1.2، الباب 1، المراية 0.6 — وتغيير اللون ×1.5. <b>القطعة المشتركة تنقسم</b>: عاملين على الصدام الأمامي = 1.75 نقطة لكل واحد، يعني ما تنحسب مثل اللي اشتغل لحاله.<br><b>الكفاءة</b> = الوقت المعتاد للفريق لنفس القطع ÷ الوقت الفعلي للعامل. 100% تعني سرعة الفريق المعتادة، وأكثر من 100% أسرع.<br><b>التقييم (0–100)</b> = 55% النقاط + 45% الكفاءة − 4 نقاط لكل إعادة عمل.<br><b>الاستغلال</b> = ساعات العمل الفعلية ÷ ساعات الدوام في الفترة.',
+    howTxt: '<b>الترتيب</b> يحسب القطع المنتهية فقط. القطعة الجارية تدخل عند الإنهاء. <b>القطعة المشتركة</b> تُحسب كنتيجة فريق واحد: كل عامل عليها ياخذ نفس الحصة من النقاط ونفس متوسط وقت الفريق، فاللي اشتغلوا نفس الشغل مع بعض ياخذون نفس التقييم حتى لو عداد واحد منهم اشتغل أطول. <b>الكفاءة</b> تميل لـ 100% لما تكون القطع قليلة وتتوضح كل ما زاد الشغل، والعلامة الحمراء ما تظهر إلا بعد ما يكون عند كل عامل تقريباً 3 قطع. اللي ما أنهى أي قطعة بعد يظهر بـ «—».<br><br><b>الوقت</b> = وقت العمل الفعلي فقط — فترات الإيقاف المؤقت (نهاية الدوام، الاستراحة) لا تُحسب.<br><b>النقاط (حجم العمل)</b> = كل قطعة لها درجة صعوبة: الصدام الأمامي 3.5، الصدام الخلفي 3.2 (ياخذون وقت طويل وفيهم قطع كثيرة)، الرفرف الخلفي 1.7، السقف 1.6، الكبوت 1.2، الباب 1، المراية 0.6 — وتغيير اللون ×1.5. <b>القطعة المشتركة تنقسم</b>: عاملين على الصدام الأمامي = 1.75 نقطة لكل واحد، يعني ما تنحسب مثل اللي اشتغل لحاله.<br><b>الكفاءة</b> = الوقت المعتاد للفريق لنفس القطع ÷ الوقت الفعلي للعامل. 100% تعني سرعة الفريق المعتادة، وأكثر من 100% أسرع.<br><b>التقييم (0–100)</b> = 55% النقاط + 45% الكفاءة (إعادة العمل ما تنقص التقييم).<br><b>الاستغلال</b> = وقت عداد العامل (حتى الشغل الجاري) ÷ ساعات الدوام في الأيام اللي اشتغل فيها — 8 ساعات في اليوم العادي، 11 في الأوفرتايم، والجمعة إجازة، واليوم يُحسب لين الحين بس.',
     noData: 'لا توجد بيانات في هذه الفترة', pdf: 'PDF', excel: 'Excel', share: 'مشاركة', whatsapp: 'واتساب', email: 'إيميل',
     preparing: 'جارٍ تجهيز التقرير…', downloaded: 'تم تنزيل الملف', report: 'تقرير الإنتاجية', period: 'الفترة', generated: 'أُنشئ في',
     demoNote: 'هذه بيانات تجريبية للعرض فقط.', clearDemo: 'مسح البيانات التجريبية', loadDemo: 'تحميل بيانات تجريبية للعرض', loadDemoQ: 'إضافة بيانات تجريبية لشهرين (للعرض فقط)؟ تظهر على كل الأجهزة المربوطة، وتقدر تمسحها بزر «مسح البيانات التجريبية» بدون ما تتأثر بياناتك الحقيقية.',
@@ -228,7 +229,7 @@ const T = {
     ranking: 'Productivity ranking', score: 'Score', cars: 'Cars', hours: 'Hours', eff: 'Efficiency', util: 'Utilization', avgCar: 'Avg/car',
     daily: 'Daily work (hours)', svcMix: 'Service mix', partTimes: 'Average time per panel', avg: 'Average', best: 'Fastest', count: 'Count',
     how: 'How is the score calculated?',
-    howTxt: '<b>Ranking</b> counts finished panels only. A running panel counts once it is finished. A <b>shared panel</b> is one team result: every worker on it gets the same share of points and the team\'s average time, so workers who did the same work together get the same score even if one timer ran longer. <b>Efficiency</b> leans toward 100% while there are only a few panels and sharpens as work adds up; red marks appear only once each worker has about 3 panels. Workers with nothing finished yet show «—».<br><br><b>Time</b> = actual working time only — paused periods (end of shift, breaks) are not counted.<br><b>Points (workload)</b> = each panel has a difficulty: front bumper 3.5, rear bumper 3.2 (long, many pieces), rear quarter 1.7, roof 1.6, hood 1.2, door 1, mirror 0.6 — colour change ×1.5. <b>Shared panels are split</b>: two workers on the front bumper = 1.75 points each, so it never counts like working alone.<br><b>Efficiency</b> = the team’s usual time for the same panels ÷ the worker’s actual time. 100% = team pace, above 100% = faster.<br><b>Score (0–100)</b> = 55% points + 45% efficiency − 4 points per rework.<br><b>Utilization</b> = actual working hours ÷ shift hours in the period.',
+    howTxt: '<b>Ranking</b> counts finished panels only. A running panel counts once it is finished. A <b>shared panel</b> is one team result: every worker on it gets the same share of points and the team\'s average time, so workers who did the same work together get the same score even if one timer ran longer. <b>Efficiency</b> leans toward 100% while there are only a few panels and sharpens as work adds up; red marks appear only once each worker has about 3 panels. Workers with nothing finished yet show «—».<br><br><b>Time</b> = actual working time only — paused periods (end of shift, breaks) are not counted.<br><b>Points (workload)</b> = each panel has a difficulty: front bumper 3.5, rear bumper 3.2 (long, many pieces), rear quarter 1.7, roof 1.6, hood 1.2, door 1, mirror 0.6 — colour change ×1.5. <b>Shared panels are split</b>: two workers on the front bumper = 1.75 points each, so it never counts like working alone.<br><b>Efficiency</b> = the team’s usual time for the same panels ÷ the worker’s actual time. 100% = team pace, above 100% = faster.<br><b>Score (0–100)</b> = 55% points + 45% efficiency (rework does not lower it).<br><b>Utilization</b> = the worker’s own timer time (running work included) ÷ shift hours on the days they worked — 8h on normal days, 11h on overtime, Friday off, today counted only up to now.',
     noData: 'No data for this period', pdf: 'PDF', excel: 'Excel', share: 'Share', whatsapp: 'WhatsApp', email: 'Email',
     preparing: 'Preparing the report…', downloaded: 'File downloaded', report: 'Productivity report', period: 'Period', generated: 'Generated',
     demoNote: 'This is demo data for preview only.', clearDemo: 'Clear demo data', loadDemo: 'Load demo data for a presentation', loadDemoQ: 'Add two months of demo data (for presenting only)? It shows on all linked devices; remove it any time with “Clear demo data” — your real data is not touched.',
@@ -386,7 +387,7 @@ const DIFFICULTY = { fbumper: 3.5, rbumper: 3.2, quarter_l: 1.7, quarter_r: 1.7,
 const QUARTER_HALF = ['hood', 'fender_l', 'fender_r'];
 const isHalfPart = (svc, part) => svc === 'quarter_ppf' && QUARTER_HALF.includes(part);
 const pName = (part, svc) => nm(PARTS[part]) + (isHalfPart(svc, part) ? ' (' + t('halfPart') + ')' : '');
-const ptsOf = x => (DIFFICULTY[x.part] || 1) * (SVC[x.service].g === 'wrap' ? 1.5 : 1) * (isHalfPart(x.service, x.part) ? .5 : 1) * (SVC[x.service].g === 'pol' ? ({ int: .8, both: 1.6 }[x.kind] || 1) : 1) * (SVC[x.service].g === 'chk' ? .3 : 1) * (['cln', 'srv'].includes(SVC[x.service].g) ? .5 : 1); // cleaning = half a polish
+const ptsOf = x => (DIFFICULTY[x.part] || 1) * (SVC[x.service].g === 'wrap' ? 1.5 : 1) * (isHalfPart(x.service, x.part) ? .5 : 1) * (SVC[x.service].g === 'pol' ? ({ int: .8, both: 1.6 }[x.kind] || 1) : 1) * (SVC[x.service].g === 'chk' ? .3 : 1) * (['cln', 'srv', 'tintx'].includes(SVC[x.service].g) ? .5 : 1); // cleaning = half a polish
 const fN = v => Number.isInteger(v) ? String(v) : v.toFixed(1);
 const un = u => u ? (LANG === 'en' && u.nameEn ? u.nameEn : u.name) : '';
 const wn = w => w ? (LANG === 'en' && w.nameEn ? w.nameEn : w.name) : '';
@@ -453,7 +454,7 @@ const IC = {
   pause: '<rect x="7" y="5" width="3.5" height="14" rx="1" fill="currentColor"/><rect x="13.5" y="5" width="3.5" height="14" rx="1" fill="currentColor"/>',
   info: '<circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/>', x: '<path d="M6 6l12 12M18 6L6 18"/>',
 };
-const SVC_IC = { full_ppf: 'shield', half_ppf: 'half', quarter_ppf: 'quarter', color_change: 'palette', tint: 'sun', ceramic: 'drop', polish: 'spark', clean: 'clean', service: 'clock', checkup: 'check', windshield: 'glass', windshield_off: 'glass', replace: 'swap' };
+const SVC_IC = { full_ppf: 'shield', half_ppf: 'half', quarter_ppf: 'quarter', color_change: 'palette', tint: 'sun', ceramic: 'drop', polish: 'spark', clean: 'clean', service: 'clock', checkup: 'check', windshield: 'glass', windshield_off: 'glass', tint_off: 'sun', replace: 'swap' };
 const ic = (n, cls = '') => `<svg class="i ${cls}" viewBox="0 0 24 24">${IC[n] || ''}</svg>`;
 
 /* ---------------- car diagram (top view, front at top) ---------------- */
@@ -1138,6 +1139,9 @@ function analyze(from, to) {
   });
   const wd = workdaysIn(from, to), shift = (+S.settings.shiftHours || 9) * 3600000;
   if (Object.keys(W).length) S.workers.filter(w => w.active && !W[w.id]).forEach(w => { W[w.id] = { id: w.id, tasks: 0, points: 0, solo: 0, shared: 0, cars: new Set(), actual: 0, expected: 0, rework: 0, parts: {}, days: {}, none: true }; });
+  // utilization: the worker's own timer time (running/paused panels included) ÷ shift hours on the days they worked — real schedule (8h, overtime 11h, Friday off), today only up to now
+  const UT = {}, now = Date.now(); S.tasks.forEach(x => { if (!x.start || x.start < from || x.start >= to) return; wids(x).forEach(id => { const u = UT[id] = UT[id] || { t: 0, days: new Set() }; const e = x.end || x.pausedAt || now; u.t += Math.min(dur(x), Math.max(0, e - x.start - offHours(x.start, e))); u.days.add(startOfDay(x.start)); }); });
+  const availDay = d => { const b = Math.min(d + DAY, now); return b > d ? Math.max(0, b - d - offHours(d, b)) : 0; };
   const list = Object.values(W).filter(w => workerById(w.id));
   const TK = Object.keys(TEAMS), maxPt = {};
   list.forEach(w => { w.team = teamOf(workerById(w.id)); maxPt[w.team] = Math.max(maxPt[w.team] || 1, w.points); });
@@ -1145,9 +1149,9 @@ function analyze(from, to) {
     // few panels = little evidence: efficiency is pulled toward 100% until there is enough work (EFF_K of normal time), so one timer can't decide the ranking
     w.effRaw = w.actual ? w.expected / w.actual * 100 : 0;
     w.eff = w.actual ? (w.expected + EFF_K) / (w.actual + EFF_K) * 100 : 0;
-    w.util = wd ? w.actual / (wd * shift) * 100 : 0;
+    { const u = UT[w.id], av = u ? [...u.days].reduce((a, d) => a + availDay(d), 0) : 0; w.util = av ? Math.min(100, u.t / av * 100) : 0; }
     w.vol = w.points / maxPts * 100;
-    w.score = Math.round(clamp(.55 * w.vol + .45 * (Math.min(w.eff, 150) / 150 * 100) - 4 * w.rework, 0, 100));
+    w.score = Math.round(clamp(.55 * w.vol + .45 * (Math.min(w.eff, 150) / 150 * 100), 0, 100)); // rework is shown but does not lower the score
     w.carsN = w.cars.size; w.avgCar = w.carsN ? w.actual / w.carsN : 0;
   });
   list.sort((a, b) => TK.indexOf(a.team) - TK.indexOf(b.team) || (a.none - b.none) || b.score - a.score || b.points - a.points);
@@ -1176,7 +1180,7 @@ function analyze(from, to) {
   const parts = Object.values(pt).map(o => ({ ...o, avg: o.ds.reduce((a, b) => a + b, 0) / o.ds.length, n: o.ds.length })).sort((a, b) => b.n - a.n);
   return { from, to, tasks, jobs: jobsIn, kpi, workers: list, daily, svc, parts, base, wd , teams };
 }
-const GROUP_NAME = { ppf: { ar: 'حماية', en: 'PPF' }, wrap: { ar: 'تغيير لون', en: 'Wrap' }, tint: { ar: 'عازل', en: 'Tint' }, pol: { ar: 'بوليش', en: 'Polish' }, pol_ext: { ar: 'بوليش خارجي', en: 'Exterior polish' }, pol_int: { ar: 'بوليش داخلي', en: 'Interior polish' }, pol_both: { ar: 'بوليش داخلي وخارجي', en: 'Interior + exterior polish' }, ppfq: { ar: 'ربع حماية', en: 'Quarter PPF' }, jam: { ar: 'تركيب الجامة', en: 'Windshield install' }, jamx: { ar: 'نزع الجامة', en: 'Windshield removal' }, rep_ppf: { ar: 'تغيير قطع حماية', en: 'Replace PPF' }, rep_tint: { ar: 'تغيير قطع عازل', en: 'Replace tint' }, cer: { ar: 'سيراميك', en: 'Ceramic' } };
+const GROUP_NAME = { ppf: { ar: 'حماية', en: 'PPF' }, wrap: { ar: 'تغيير لون', en: 'Wrap' }, tint: { ar: 'عازل', en: 'Tint' }, tintx: { ar: 'نزع العازل', en: 'Tint removal' }, pol: { ar: 'بوليش', en: 'Polish' }, pol_ext: { ar: 'بوليش خارجي', en: 'Exterior polish' }, pol_int: { ar: 'بوليش داخلي', en: 'Interior polish' }, pol_both: { ar: 'بوليش داخلي وخارجي', en: 'Interior + exterior polish' }, ppfq: { ar: 'ربع حماية', en: 'Quarter PPF' }, jam: { ar: 'تركيب الجامة', en: 'Windshield install' }, jamx: { ar: 'نزع الجامة', en: 'Windshield removal' }, rep_ppf: { ar: 'تغيير قطع حماية', en: 'Replace PPF' }, rep_tint: { ar: 'تغيير قطع عازل', en: 'Replace tint' }, cer: { ar: 'سيراميك', en: 'Ceramic' } };
 const partLabel = k => { const [g, p] = k.split(':'); return nm(PARTS[p]) + ' · ' + nm(GROUP_NAME[g]); };
 
 /* ---------------- dashboard ---------------- */
