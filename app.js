@@ -77,7 +77,9 @@ const SERVICES = [
   { k: 'ceramic', g: 'cer', ar: 'نانو سيراميك', en: 'Ceramic coating', parts: ['whole'] },
   { k: 'polish', g: 'pol', ar: 'بوليش', en: 'Polish', parts: ['whole'] },
   { k: 'clean', g: 'cln', ar: 'تنظيف', en: 'Cleaning', parts: ['whole'] }, // after PPF — done by the polish team
-  { k: 'windshield', g: 'jam', ar: 'الجامة الأمامية', en: 'Front windshield', parts: ['windshield'] },
+  { k: 'windshield', g: 'jam', ar: 'تركيب الجامة', en: 'Windshield install', parts: ['windshield'] },
+  { k: 'windshield_off', g: 'jamx', ar: 'نزع الجامة', en: 'Windshield removal', parts: ['windshield'] }, // any worker — PPF or polish team
+  { k: 'checkup', g: 'chk', ar: 'تشييك', en: 'Check-up', parts: ['whole'] }, // the 3-day check after a new job
   { k: 'service', g: 'srv', ar: 'سيرفيس', en: 'Service visit', parts: ['whole'] }, // a car we worked on before: just pick the workers
   { k: 'replace', g: 'rep', ar: 'تغيير قطع', en: 'Panel replacement', parts: [] },
 ];
@@ -85,15 +87,15 @@ const SVC = Object.fromEntries(SERVICES.map(s => [s.k, s]));
 // how the new-car page groups the services
 const SVC_CATS = [
   { k: 'ppf', ic: 'shield', ar: 'الحماية', en: 'PPF', svcs: ['full_ppf', 'half_ppf', 'quarter_ppf', 'color_change'], hint: { ar: 'خيار واحد فقط', en: 'one only' } },
-  { k: 'tint', ic: 'sun', ar: 'العازل الحراري', en: 'Tint', svcs: ['tint', 'windshield'] },
+  { k: 'tint', ic: 'sun', ar: 'العازل الحراري', en: 'Tint', svcs: ['tint', 'windshield', 'windshield_off'] },
   { k: 'pol', ic: 'spark', ar: 'البوليش', en: 'Polish', svcs: ['polish', 'ceramic', 'clean'] },
   { k: 'rep', ic: 'swap', ar: 'تغيير القطع', en: 'Panel replacement', svcs: ['replace'] },
-  { k: 'srv', ic: 'clock', ar: 'سيرفيس', en: 'Service', svcs: ['service'], hint: { ar: 'لسيارة اشتغلنا عليها من قبل', en: 'for a car we worked on before' } },
+  { k: 'srv', ic: 'clock', ar: 'سيرفيس', en: 'Service', svcs: ['service', 'checkup'], hint: { ar: 'لسيارة اشتغلنا عليها من قبل', en: 'for a car we worked on before' } },
 ];
 const FILM_TYPES = { ppf: { ar: 'حماية PPF', en: 'PPF film' }, tint: { ar: 'عازل حراري', en: 'Window film' }, wrap: { ar: 'تغيير لون', en: 'Color wrap' }, cer: { ar: 'سيراميك', en: 'Ceramic' } };
 // kind = 'ppf' | 'tint' — only used by "panel replacement", where the supervisor picks which one first
-const poolOf = (svc, kind) => { const g = SVC[svc].g; return g === 'tint' ? GLASS : g === 'jam' ? ['windshield'] : g === 'rep' ? (kind === 'tint' ? GLASS : BODY) : (g === 'cer' || g === 'pol' || g === 'cln' || g === 'srv') ? ['whole'] : BODY; };
-const isTintLike = (svc, kind) => { const g = SVC[svc].g; return g === 'tint' || g === 'jam' || (g === 'rep' && kind === 'tint'); };
+const poolOf = (svc, kind) => { const g = SVC[svc].g; return g === 'tint' ? GLASS : (g === 'jam' || g === 'jamx') ? ['windshield'] : g === 'rep' ? (kind === 'tint' ? GLASS : BODY) : (g === 'cer' || g === 'pol' || g === 'cln' || g === 'srv' || g === 'chk') ? ['whole'] : BODY; };
+const isTintLike = (svc, kind) => { const g = SVC[svc].g; return g === 'tint' || g === 'jam' || g === 'jamx' || (g === 'rep' && kind === 'tint'); };
 // services with a sub-type picked first: panel replacement (tint/PPF) and polish (exterior/interior/both)
 const KINDS = { rep: ['tint', 'ppf'], pol: ['ext', 'int', 'both'] };
 const KIND_DEF = { rep: 'ppf', pol: 'ext' };
@@ -102,7 +104,8 @@ const kindLabel = k => t({ tint: 'replTint', ppf: 'replPpf', ext: 'polExt', int:
 const needShade = () => false; // owner: tint needs neither shade nor film
 const needFilm = svc => SVC[svc].g === 'jam'; // the windshield service only needs the film type
 const dKind = svc => (draft && draft.kind && draft.kind[svc]) || KIND_DEF[SVC[svc].g] || 'ppf';
-const SVC_TEAM = svc => ['cer', 'pol', 'cln'].includes(SVC[svc].g) ? 'polish' : 'ppf';
+const SVC_TEAM = svc => SVC[svc].g === 'jamx' ? 'all' : ['cer', 'pol', 'cln'].includes(SVC[svc].g) ? 'polish' : 'ppf';
+const inTeam = (w, team) => team === 'all' || teamOf(w) === team;
 const PALETTE = ['#FBBF15', '#5FB4FF', '#2FD896', '#FF7A59', '#B98CFF', '#FF5D9E', '#6FE3D0', '#F2E863', '#9DB4FF', '#FFA94D'];
 // Brands ordered by how common they are on Qatar roads; models list Qatar trims. Anything else → "Other".
 const MODELS = {
@@ -133,6 +136,9 @@ const MODELS = {
   'MG': ['RX8', 'RX5', 'ZS', 'HS', 'GT', 'MG5', 'MG7'],
   'Haval': ['H9', 'H7', 'H6', 'H6 GT', 'Jolion', 'Dargo'],
   'Tank': ['Tank 300', 'Tank 500', 'Tank 700', 'Tank 400'],
+  'ROX': ['ROX 01', 'ROX Adamas'],
+  'iCAUR': ['V27', 'V23', '03'],
+  'Deepal': ['S07', 'L07', 'G318', 'S05'],
   'Denza': ['B8', 'B5', 'D9', 'N7', 'N9', 'Z9 GT'],
   'Leopard': ['Leopard 8', 'Leopard 5', 'Ti7'],
   'Chery': ['Tiggo 8 Pro', 'Tiggo 7 Pro', 'Tiggo 4', 'Arrizo'],
@@ -147,7 +153,7 @@ const MODELS = {
   'Ferrari': ['Purosangue', 'Roma', '296', 'SF90', '812', '12Cilindri'],
 };
 // The brands the shop gets most come first so the supervisor doesn't have to search
-const TOP_MAKES = ['Toyota', 'Nissan', 'Lexus', 'Denza', 'Leopard', 'Jetour', 'Haval', 'Tank'];
+const TOP_MAKES = ['Toyota', 'Nissan', 'Lexus', 'Denza', 'Leopard', 'Jetour', 'Haval', 'Tank', 'ROX'];
 const MAKES = [...TOP_MAKES, ...Object.keys(MODELS).filter(m => !TOP_MAKES.includes(m))];
 const COLORS = [['أبيض', 'White'], ['أسود', 'Black'], ['رمادي', 'Grey'], ['فضي', 'Silver'], ['أزرق', 'Blue'], ['أحمر', 'Red'], ['بيج', 'Beige'], ['بني', 'Brown'], ['أخضر', 'Green'], ['ذهبي', 'Gold'], ['برتقالي', 'Orange'], ['أصفر', 'Yellow']];
 const YEARS = Array.from({ length: 2027 - 1990 + 1 }, (_, i) => String(2027 - i));
@@ -173,7 +179,7 @@ const T = {
     closeConfirm: 'بعض المهام لم تنتهِ بعد. إغلاق السيارة على أي حال؟', deleteConfirm: 'حذف نهائي لهذه السيارة وكل مهامها؟',
     status: 'الحالة', open: 'قيد العمل', closed: 'مغلقة', editTask: 'تعديل المهمة', service: 'الخدمة', part: 'القطعة',
     startTime: 'وقت البدء', endTime: 'وقت الانتهاء', rework: 'إعادة عمل (خطأ وتمت إعادته)', delete: 'حذف', save: 'حفظ', cancel: 'إلغاء',
-    edited: 'معدّل', demoMode: 'وضع العرض — بيانات تجريبية للشرح فقط، منفصلة تماماً عن بيانات الورشة', demoReset: 'إعادة البيانات', breakStart: 'بداية الاستراحة (إيقاف تلقائي)', breakEnd: 'رجوع للعمل (تذكير)', breakWarn: 'تنبيه قبل الاستراحة (دقائق)', breakSoon: '⏰ باقي {0} دقائق على الاستراحة — {1} مهمة جارية ستتوقف تلقائياً', breakPaused: '⏸ وقت الاستراحة: تم إيقاف {0} مهمة تلقائياً. استأنفوا الساعة {1}', breakOver: '▶ انتهت الاستراحة — {0} مهمة متوقفة بانتظار الاستئناف', halfPart: 'نصف', follow: 'المتابعة', fuSub: 'تواصل مع العملاء', fuCheck: 'تشييك بعد التركيب', fuSvc: 'موعد السيرفيس', fuLate: 'متأخر {0} يوم', fuFinished: 'انتهى الشغل', visitsN: 'زارتنا {0} مرات', firstVisit: 'أول زيارة', call: 'اتصال', whatsapp: 'واتساب', noPhone: 'لا يوجد رقم جوال', fuLater: 'بعد أسبوع', fuContacted: 'تم التواصل', fuDoneBy: 'تم التواصل — {0} · {1}', fuIntro: 'بعد {0} أيام من تسليم السيارة نكلم العميل يمرّ للتشييك، وبعد {1} أشهر من آخر زيارة نكلمه للسيرفيس. اضغط «تم التواصل» بعد المكالمة.', fuNow: 'يحتاجون تواصل الآن', fuNone: 'ما فيه أحد يحتاج تواصل الآن', fuSnoozed: 'مؤجّلة', fuDoneList: 'تم التواصل مؤخراً', fuSnoozedT: 'تأجّلت أسبوع', fuDoneT: 'تم تسجيل التواصل', carHistory: 'سجل السيارة', thisVisit: 'هذه الزيارة', seenBefore: 'هذه السيارة زارتنا {0} مرات من قبل', lastVisit: 'آخر زيارة', fillCar: 'تعبئة البيانات', filled: 'تمت تعبئة بيانات السيارة', fuAlert: '📞 {0} عملاء يحتاجون تواصل (تشييك أو سيرفيس)', fuOpen: 'عرض', tapWorkers: 'اضغط على العمال اللي بيشتغلون على السيارة — بدون تحديد قطع', workingNow2: 'يشتغل الآن', firstPart: 'يشتغل على أول قطعة — تُحسب في الترتيب عند الإنهاء', shiftStart: 'بداية الدوام', shiftEnd: 'نهاية الدوام', otResume: 'رجوع الأوفرتايم', otToday: 'أوفرتايم اليوم', otHint: 'اليوم أوفرتايم: الرجوع من الاستراحة الساعة 13:00 بدل 16:00', otOn: 'تم: اليوم أوفرتايم — الرجوع الساعة {0}', otOff: 'تم إلغاء الأوفرتايم لليوم', wDone: 'أنهى شغله', waitingW: 'ينتظر', carMap: 'خريطة السيارة', carMapHint: 'اضغط على أي جزء لترى من يعمل عليه', partDoneAll: 'إنهاء الجزء لكل العمال', partStartAll: 'ابدأ للكل', partPauseAll: 'إيقاف مؤقت للكل', partResumeAll: 'استئناف للكل', partFinishQ: 'إنهاء «{0}» وإيقاف عداد {1} عامل؟', partEmpty: 'هذا الجزء ليس ضمن شغل هذه السيارة', sWait: 'لم يبدأ', sRun: 'جاري', sPause: 'متوقف', sDone: 'منتهي', otherParts: 'أجزاء أخرى', polWhat: 'نوع البوليش', polExt: 'خارجي', polInt: 'داخلي', polBoth: 'داخلي وخارجي', jamSpec: 'نوع الفيلم', newColor: 'اللون الجديد', pinTaken: 'هذا الرمز مستخدم لحساب آخر — اختر رمزاً مختلفاً', team: 'الفريق', progress: 'تطوّر الأداء مع الوقت', weekVs: 'أسبوع بأسبوع', monthVs: 'شهر بشهر', ptsDay: 'نقاط/يوم', change: 'التغيّر', trend6: 'آخر 6 فترات', soFar: 'حتى الآن', prevShort: 'السابق', curShort: 'الحالي', new: 'جديد', teamRate: 'متوسط الفريق', progressHint: 'نقارن معدل الإنتاج اليومي (نقاط صعوبة القطع ÷ أيام العمل) حتى تكون المقارنة عادلة حتى لو الفترة الحالية لم تنتهِ بعد. الخط الأصفر يوضح اتجاه العامل في آخر 6 فترات.', lowRank: 'الأضعف', noWorkP: 'لا عمل في هذه الفترة', manualT: 'وقت يدوي', editedT: 'وقت معدّل', addTime: 'إضافة وقت', timeSec: 'الوقت', timeHint: 'إذا نسيت تسجيل الوقت أو كنت مشغولاً، أدخله هنا تقريبياً.', pauseMin: 'وقت التوقف (دقيقة)', netDur: 'مدة العمل', editLog: 'سجل تعديل الوقت', was: 'كان', none: 'لا شيء', manualNote: '{0} مهام وقتها أُدخل أو عُدّل يدوياً في هذه الفترة', photoErr: 'لم نستطع قراءة الصورة — اختر صورة JPG أو PNG (صور HEIC من الآيفون لا تُقرأ في متصفح الكمبيوتر)', pauseTooLong: 'وقت التوقف أطول من مدة العمل', noStartEnd: 'أدخل وقت البدء أولاً', alreadyRunning: '{0} يعمل الآن على مهمة أخرى — ابدأ على أي حال؟', started: 'بدأ العمل', finished: 'انتهت المهمة',
+    edited: 'معدّل', demoMode: 'وضع العرض — بيانات تجريبية للشرح فقط، منفصلة تماماً عن بيانات الورشة', demoReset: 'إعادة البيانات', breakStart: 'بداية الاستراحة (إيقاف تلقائي)', breakEnd: 'رجوع للعمل (تذكير)', breakWarn: 'تنبيه قبل الاستراحة (دقائق)', breakSoon: '⏰ باقي {0} دقائق على الاستراحة — {1} مهمة جارية ستتوقف تلقائياً', breakPaused: '⏸ وقت الاستراحة: تم إيقاف {0} مهمة تلقائياً. استأنفوا الساعة {1}', breakOver: '▶ انتهت الاستراحة — {0} مهمة متوقفة بانتظار الاستئناف', halfPart: 'نصف', follow: 'المتابعة', fuSub: 'تواصل مع العملاء', fuCheck: 'تشييك بعد التركيب', fuSvc: 'موعد السيرفيس', fuSvcN: 'سيرفيس — مر {0} شهر', fuIn: 'بعد {0} يوم · {1}', fuLastVisit: 'آخر زيارة', fuNoInfo: 'لا توجد بيانات العميل — تابع بالسيارة ورقم اللوحة', fuCameBack: 'جات السيارة للورشة · {0}', fuWeek: 'نتصل فيهم هذا الأسبوع', fuSoon: 'القادمين', fuNoToday: 'ما فيه أحد اليوم — هذول القادمين في الأيام الجاية', fuNoSoon: 'ما فيه أحد في الأسبوعين الجايين', fuLate: 'متأخر {0} يوم', fuFinished: 'انتهى الشغل', visitsN: 'زارتنا {0} مرات', firstVisit: 'أول زيارة', call: 'اتصال', whatsapp: 'واتساب', noPhone: 'لا يوجد رقم جوال', fuLater: 'بعد أسبوع', fuContacted: 'تم التواصل', fuDoneBy: 'تم التواصل — {0} · {1}', fuIntro: 'بعد {0} أيام من تسليم السيارة نكلم العميل يمرّ للتشييك، وكل {1} أشهر من آخر زيارة نكلمه للسيرفيس (لمدة 3 سنوات). القائمة تجمع اللي موعدهم هذا الأسبوع واللي فاتهم بأيام. اضغط «تم التواصل» بعد المكالمة، ولو جات السيارة للتشييك أو السيرفيس تنشال لحالها.', fuNow: 'يحتاجون تواصل الآن', fuNone: 'ما فيه أحد يحتاج تواصل الآن', fuSnoozed: 'مؤجّلة', fuDoneList: 'تم التواصل مؤخراً', fuSnoozedT: 'تأجّلت أسبوع', fuDoneT: 'تم تسجيل التواصل', carHistory: 'سجل السيارة', thisVisit: 'هذه الزيارة', seenBefore: 'هذه السيارة زارتنا {0} مرات من قبل', lastVisit: 'آخر زيارة', fillCar: 'تعبئة البيانات', filled: 'تمت تعبئة بيانات السيارة', fuAlert: '📞 {0} عملاء يحتاجون تواصل (تشييك أو سيرفيس)', fuOpen: 'عرض', tapWorkers: 'اضغط على العمال اللي بيشتغلون على السيارة — بدون تحديد قطع', workingNow2: 'يشتغل الآن', firstPart: 'يشتغل على أول قطعة — تُحسب في الترتيب عند الإنهاء', shiftStart: 'بداية الدوام', shiftEnd: 'نهاية الدوام', otResume: 'رجوع الأوفرتايم', otToday: 'أوفرتايم اليوم', otHint: 'اليوم أوفرتايم: الرجوع من الاستراحة الساعة 13:00 بدل 16:00', otOn: 'تم: اليوم أوفرتايم — الرجوع الساعة {0}', otOff: 'تم إلغاء الأوفرتايم لليوم', wDone: 'أنهى شغله', waitingW: 'ينتظر', carMap: 'خريطة السيارة', carMapHint: 'اضغط على أي جزء لترى من يعمل عليه', partDoneAll: 'إنهاء الجزء لكل العمال', partStartAll: 'ابدأ للكل', partPauseAll: 'إيقاف مؤقت للكل', partResumeAll: 'استئناف للكل', partFinishQ: 'إنهاء «{0}» وإيقاف عداد {1} عامل؟', partEmpty: 'هذا الجزء ليس ضمن شغل هذه السيارة', sWait: 'لم يبدأ', sRun: 'جاري', sPause: 'متوقف', sDone: 'منتهي', otherParts: 'أجزاء أخرى', polWhat: 'نوع البوليش', polExt: 'خارجي', polInt: 'داخلي', polBoth: 'داخلي وخارجي', jamSpec: 'نوع الفيلم', newColor: 'اللون الجديد', pinTaken: 'هذا الرمز مستخدم لحساب آخر — اختر رمزاً مختلفاً', team: 'الفريق', progress: 'تطوّر الأداء مع الوقت', weekVs: 'أسبوع بأسبوع', monthVs: 'شهر بشهر', ptsDay: 'نقاط/يوم', change: 'التغيّر', trend6: 'آخر 6 فترات', soFar: 'حتى الآن', prevShort: 'السابق', curShort: 'الحالي', new: 'جديد', teamRate: 'متوسط الفريق', progressHint: 'نقارن معدل الإنتاج اليومي (نقاط صعوبة القطع ÷ أيام العمل) حتى تكون المقارنة عادلة حتى لو الفترة الحالية لم تنتهِ بعد. الخط الأصفر يوضح اتجاه العامل في آخر 6 فترات.', lowRank: 'الأضعف', noWorkP: 'لا عمل في هذه الفترة', manualT: 'وقت يدوي', editedT: 'وقت معدّل', addTime: 'إضافة وقت', timeSec: 'الوقت', timeHint: 'إذا نسيت تسجيل الوقت أو كنت مشغولاً، أدخله هنا تقريبياً.', pauseMin: 'وقت التوقف (دقيقة)', netDur: 'مدة العمل', editLog: 'سجل تعديل الوقت', was: 'كان', none: 'لا شيء', manualNote: '{0} مهام وقتها أُدخل أو عُدّل يدوياً في هذه الفترة', photoErr: 'لم نستطع قراءة الصورة — اختر صورة JPG أو PNG (صور HEIC من الآيفون لا تُقرأ في متصفح الكمبيوتر)', pauseTooLong: 'وقت التوقف أطول من مدة العمل', noStartEnd: 'أدخل وقت البدء أولاً', alreadyRunning: '{0} يعمل الآن على مهمة أخرى — ابدأ على أي حال؟', started: 'بدأ العمل', finished: 'انتهت المهمة',
     noTasksW: 'لا توجد مهام معيّنة لهذا العامل', week: 'أسبوع', month: 'شهر', thisWeek: 'هذا الأسبوع',
     kCars: 'السيارات', kTasks: 'القطع المنجزة', kHours: 'ساعات العمل', kAvgCar: 'متوسط العمل للسيارة', kTurn: 'متوسط مدة التسليم', kRework: 'نسبة إعادة العمل',
     ranking: 'ترتيب الإنتاجية', score: 'التقييم', cars: 'سيارات', hours: 'ساعات', eff: 'الكفاءة', util: 'الاستغلال', avgCar: 'متوسط/سيارة',
@@ -216,7 +222,7 @@ const T = {
     closeConfirm: 'Some tasks are not finished. Close the car anyway?', deleteConfirm: 'Permanently delete this car and all its tasks?',
     status: 'Status', open: 'In progress', closed: 'Closed', editTask: 'Edit task', service: 'Service', part: 'Panel',
     startTime: 'Start time', endTime: 'End time', rework: 'Rework (mistake, redone)', delete: 'Delete', save: 'Save', cancel: 'Cancel',
-    edited: 'edited', demoMode: 'Presentation mode — sample data only, completely separate from the workshop data', demoReset: 'Reset data', breakStart: 'Break starts (auto-pause)', breakEnd: 'Back to work (reminder)', breakWarn: 'Warn before break (minutes)', breakSoon: '⏰ {0} minutes to the break — {1} running tasks will pause automatically', breakPaused: '⏸ Break time: {0} tasks paused automatically. Resume at {1}', breakOver: '▶ Break is over — {0} paused tasks waiting to resume', halfPart: 'half', follow: 'Follow-up', fuSub: 'Customer calls', fuCheck: 'Post-job check-up', fuSvc: 'Service due', fuLate: '{0} days late', fuFinished: 'Finished', visitsN: '{0} visits', firstVisit: 'first visit', call: 'Call', whatsapp: 'WhatsApp', noPhone: 'No phone number', fuLater: 'In a week', fuContacted: 'Contacted', fuDoneBy: 'Contacted — {0} · {1}', fuIntro: '{0} days after handover we call the customer for a check-up, and {1} months after the last visit we call for a service. Tap «Contacted» after the call.', fuNow: 'Need a call now', fuNone: 'Nobody needs a call right now', fuSnoozed: 'Snoozed', fuDoneList: 'Recently contacted', fuSnoozedT: 'Snoozed for a week', fuDoneT: 'Marked as contacted', carHistory: 'Car history', thisVisit: 'this visit', seenBefore: 'This car has visited us {0} times before', lastVisit: 'Last visit', fillCar: 'Fill details', filled: 'Car details filled', fuAlert: '📞 {0} customers need a call (check-up or service)', fuOpen: 'Open', tapWorkers: 'Tap the workers who will work on this car — no panels needed', workingNow2: 'working now', firstPart: 'on the first panel — counts in the ranking once finished', shiftStart: 'Shift starts', shiftEnd: 'Shift ends', otResume: 'Overtime: back at', otToday: 'Overtime today', otHint: 'Overtime today: back from the break at 13:00 instead of 16:00', otOn: 'Overtime today — back at {0}', otOff: 'Overtime cancelled for today', wDone: 'Work done', waitingW: 'Waiting', carMap: 'Car map', carMapHint: 'Tap any part to see who is working on it', partDoneAll: 'Finish part for everyone', partStartAll: 'Start all', partPauseAll: 'Pause all', partResumeAll: 'Resume all', partFinishQ: 'Finish “{0}” and stop the timer of {1} worker(s)?', partEmpty: 'This part is not in this car\'s work', sWait: 'Not started', sRun: 'Running', sPause: 'Paused', sDone: 'Done', otherParts: 'Other parts', polWhat: 'Polish type', polExt: 'Exterior', polInt: 'Interior', polBoth: 'Interior + exterior', jamSpec: 'Film type', newColor: 'New colour', pinTaken: 'This code is used by another account — pick a different one', team: 'Team', progress: 'Progress over time', weekVs: 'Week vs week', monthVs: 'Month vs month', ptsDay: 'Pts/day', change: 'Change', trend6: 'Last 6 periods', soFar: 'so far', prevShort: 'prev', curShort: 'now', new: 'new', teamRate: 'Team average', progressHint: 'We compare the daily production rate (panel difficulty points ÷ working days) so it stays fair even while the current period is still running. The yellow line shows each worker\'s direction over the last 6 periods.', lowRank: 'lowest', noWorkP: 'no work this period', manualT: 'manual time', editedT: 'time edited', addTime: 'Add time', timeSec: 'Time', timeHint: 'Forgot to log it or were busy? Enter an approximate time here.', pauseMin: 'Paused (minutes)', netDur: 'Work time', editLog: 'Time edit history', was: 'was', none: 'none', manualNote: '{0} tasks had their time entered or edited by hand in this period', photoErr: 'Could not read the photo — pick a JPG or PNG (iPhone HEIC photos do not open in desktop browsers)', pauseTooLong: 'Paused time is longer than the work span', noStartEnd: 'Enter the start time first', alreadyRunning: '{0} is already working on another task — start anyway?', started: 'Started', finished: 'Task finished',
+    edited: 'edited', demoMode: 'Presentation mode — sample data only, completely separate from the workshop data', demoReset: 'Reset data', breakStart: 'Break starts (auto-pause)', breakEnd: 'Back to work (reminder)', breakWarn: 'Warn before break (minutes)', breakSoon: '⏰ {0} minutes to the break — {1} running tasks will pause automatically', breakPaused: '⏸ Break time: {0} tasks paused automatically. Resume at {1}', breakOver: '▶ Break is over — {0} paused tasks waiting to resume', halfPart: 'half', follow: 'Follow-up', fuSub: 'Customer calls', fuCheck: 'Post-job check-up', fuSvc: 'Service due', fuSvcN: 'Service — {0} months', fuIn: 'in {0} days · {1}', fuLastVisit: 'Last visit', fuNoInfo: 'No customer details — follow up by the car and plate number', fuCameBack: 'Car came back · {0}', fuWeek: 'Call this week', fuSoon: 'Coming up', fuNoToday: 'Nobody today — these are the next days', fuNoSoon: 'Nobody in the next two weeks', fuLate: '{0} days late', fuFinished: 'Finished', visitsN: '{0} visits', firstVisit: 'first visit', call: 'Call', whatsapp: 'WhatsApp', noPhone: 'No phone number', fuLater: 'In a week', fuContacted: 'Contacted', fuDoneBy: 'Contacted — {0} · {1}', fuIntro: '{0} days after handover we call for a check-up, and every {1} months after the last visit we call for a service (for 3 years). The list holds everyone due this week plus anyone a few days late. Tap «Contacted» after the call; if the car comes in for a check-up or service it clears by itself.', fuNow: 'Need a call now', fuNone: 'Nobody needs a call right now', fuSnoozed: 'Snoozed', fuDoneList: 'Recently contacted', fuSnoozedT: 'Snoozed for a week', fuDoneT: 'Marked as contacted', carHistory: 'Car history', thisVisit: 'this visit', seenBefore: 'This car has visited us {0} times before', lastVisit: 'Last visit', fillCar: 'Fill details', filled: 'Car details filled', fuAlert: '📞 {0} customers need a call (check-up or service)', fuOpen: 'Open', tapWorkers: 'Tap the workers who will work on this car — no panels needed', workingNow2: 'working now', firstPart: 'on the first panel — counts in the ranking once finished', shiftStart: 'Shift starts', shiftEnd: 'Shift ends', otResume: 'Overtime: back at', otToday: 'Overtime today', otHint: 'Overtime today: back from the break at 13:00 instead of 16:00', otOn: 'Overtime today — back at {0}', otOff: 'Overtime cancelled for today', wDone: 'Work done', waitingW: 'Waiting', carMap: 'Car map', carMapHint: 'Tap any part to see who is working on it', partDoneAll: 'Finish part for everyone', partStartAll: 'Start all', partPauseAll: 'Pause all', partResumeAll: 'Resume all', partFinishQ: 'Finish “{0}” and stop the timer of {1} worker(s)?', partEmpty: 'This part is not in this car\'s work', sWait: 'Not started', sRun: 'Running', sPause: 'Paused', sDone: 'Done', otherParts: 'Other parts', polWhat: 'Polish type', polExt: 'Exterior', polInt: 'Interior', polBoth: 'Interior + exterior', jamSpec: 'Film type', newColor: 'New colour', pinTaken: 'This code is used by another account — pick a different one', team: 'Team', progress: 'Progress over time', weekVs: 'Week vs week', monthVs: 'Month vs month', ptsDay: 'Pts/day', change: 'Change', trend6: 'Last 6 periods', soFar: 'so far', prevShort: 'prev', curShort: 'now', new: 'new', teamRate: 'Team average', progressHint: 'We compare the daily production rate (panel difficulty points ÷ working days) so it stays fair even while the current period is still running. The yellow line shows each worker\'s direction over the last 6 periods.', lowRank: 'lowest', noWorkP: 'no work this period', manualT: 'manual time', editedT: 'time edited', addTime: 'Add time', timeSec: 'Time', timeHint: 'Forgot to log it or were busy? Enter an approximate time here.', pauseMin: 'Paused (minutes)', netDur: 'Work time', editLog: 'Time edit history', was: 'was', none: 'none', manualNote: '{0} tasks had their time entered or edited by hand in this period', photoErr: 'Could not read the photo — pick a JPG or PNG (iPhone HEIC photos do not open in desktop browsers)', pauseTooLong: 'Paused time is longer than the work span', noStartEnd: 'Enter the start time first', alreadyRunning: '{0} is already working on another task — start anyway?', started: 'Started', finished: 'Task finished',
     noTasksW: 'No tasks assigned to this worker', week: 'Week', month: 'Month', thisWeek: 'This week',
     kCars: 'Cars', kTasks: 'Panels done', kHours: 'Labor hours', kAvgCar: 'Avg labor / car', kTurn: 'Avg turnaround', kRework: 'Rework rate',
     ranking: 'Productivity ranking', score: 'Score', cars: 'Cars', hours: 'Hours', eff: 'Efficiency', util: 'Utilization', avgCar: 'Avg/car',
@@ -380,7 +386,7 @@ const DIFFICULTY = { fbumper: 2, rbumper: 1.85, quarter_l: 1.7, quarter_r: 1.7, 
 const QUARTER_HALF = ['hood', 'fender_l', 'fender_r'];
 const isHalfPart = (svc, part) => svc === 'quarter_ppf' && QUARTER_HALF.includes(part);
 const pName = (part, svc) => nm(PARTS[part]) + (isHalfPart(svc, part) ? ' (' + t('halfPart') + ')' : '');
-const ptsOf = x => (DIFFICULTY[x.part] || 1) * (SVC[x.service].g === 'wrap' ? 1.5 : 1) * (isHalfPart(x.service, x.part) ? .5 : 1) * (SVC[x.service].g === 'pol' ? ({ int: .8, both: 1.6 }[x.kind] || 1) : 1) * (['cln', 'srv'].includes(SVC[x.service].g) ? .5 : 1); // cleaning = half a polish
+const ptsOf = x => (DIFFICULTY[x.part] || 1) * (SVC[x.service].g === 'wrap' ? 1.5 : 1) * (isHalfPart(x.service, x.part) ? .5 : 1) * (SVC[x.service].g === 'pol' ? ({ int: .8, both: 1.6 }[x.kind] || 1) : 1) * (SVC[x.service].g === 'chk' ? .3 : 1) * (['cln', 'srv'].includes(SVC[x.service].g) ? .5 : 1); // cleaning = half a polish
 const fN = v => Number.isInteger(v) ? String(v) : v.toFixed(1);
 const un = u => u ? (LANG === 'en' && u.nameEn ? u.nameEn : u.name) : '';
 const wn = w => w ? (LANG === 'en' && w.nameEn ? w.nameEn : w.name) : '';
@@ -445,7 +451,7 @@ const IC = {
   pause: '<rect x="7" y="5" width="3.5" height="14" rx="1" fill="currentColor"/><rect x="13.5" y="5" width="3.5" height="14" rx="1" fill="currentColor"/>',
   info: '<circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/>', x: '<path d="M6 6l12 12M18 6L6 18"/>',
 };
-const SVC_IC = { full_ppf: 'shield', half_ppf: 'half', quarter_ppf: 'quarter', color_change: 'palette', tint: 'sun', ceramic: 'drop', polish: 'spark', clean: 'clean', service: 'clock', windshield: 'glass', replace: 'swap' };
+const SVC_IC = { full_ppf: 'shield', half_ppf: 'half', quarter_ppf: 'quarter', color_change: 'palette', tint: 'sun', ceramic: 'drop', polish: 'spark', clean: 'clean', service: 'clock', checkup: 'check', windshield: 'glass', windshield_off: 'glass', replace: 'swap' };
 const ic = (n, cls = '') => `<svg class="i ${cls}" viewBox="0 0 24 24">${IC[n] || ''}</svg>`;
 
 /* ---------------- car diagram (top view, front at top) ---------------- */
@@ -708,7 +714,7 @@ function renderAssign() {
   if (!draft.services.length) { z.innerHTML = `<h2>${ic('users')}${t('assignWork')}</h2><div class="empty">${t('chooseSvc')}</div>`; return; }
   if (!draft.services.includes(draft.svc)) draft.svc = draft.services[0];
   const svc = draft.svc, map = draft.assign[svc], g = SVC[svc].g, kind = dKind(svc), pool = poolOf(svc, kind), tl = isTintLike(svc, kind);
-  const pref = SVC_TEAM(svc), workers = S.workers.filter(w => w.active && (draft.allW || teamOf(w) === pref)).sort((a, b) => (teamOf(a) !== pref) - (teamOf(b) !== pref));
+  const pref = SVC_TEAM(svc), workers = S.workers.filter(w => w.active && (draft.allW || inTeam(w, pref))).sort((a, b) => !inTeam(a, pref) - !inTeam(b, pref));
   if (draft.worker && !workers.some(w => w.id === draft.worker)) draft.worker = null;
   const one = pool.length === 1, onOne = wid => one && (map[pool[0]] || []).includes(wid);
   const cnt = wid => Object.values(draft.assign).reduce((a, m) => a + Object.values(m).filter(l => l.includes(wid)).length, 0);
@@ -770,50 +776,63 @@ function saveJob() {
 /* ---------------- car history + customer follow-up ---------------- */
 const plateKey = p => String(p || '').replace(/[\s\-_.]/g, '').toUpperCase();
 const visitsOf = plate => { const k = plateKey(plate); return k ? S.jobs.filter(o => plateKey(o.car.plate) === k).sort((a, b) => a.createdAt - b.createdAt) : []; };
-const FU_CHECK_D = 3, FU_SVC_M = 6;
+const FU_CHECK_D = 3, FU_SVC_M = 6, FU_SVC_TIMES = 6, FU_BACK = 21 * DAY, FU_AHEAD = 14 * DAY; // service every 6 months for 3 years; a missed one stays ~3 weeks, then waits for the next
+const isVisitOnly = j => j.services.every(k => SVC[k] && ['srv', 'chk'].includes(SVC[k].g)); // service / check-up visits
+const addMonths = (ts, m) => { const d = new Date(ts); d.setMonth(d.getMonth() + m); return d.getTime(); };
+const fuWeekEnd = () => periodRange({ mode: 'week', ref: Date.now() }).to; // the work week ends Thursday night
 const waNum = p => { let d = String(p || '').replace(/\D/g, ''); if (d.startsWith('00')) d = d.slice(2); if (d.length === 8) d = '974' + d; return d; };
-// what needs a call now: 3 days after a car is finished (check-up) · 6 months after a car's last visit (service)
+// who to call: a check-up 3 days after a job · a service every 6 months after the car's last visit (for 3 years)
 function fuItems() {
-  const now = Date.now(), out = [], lastSeen = new Set();
-  [...S.jobs].sort((a, b) => b.createdAt - a.createdAt).forEach(j => {
+  const now = Date.now(), until = fuWeekEnd() + FU_AHEAD, out = [], lastSeen = new Set();
+  const visits = {}; S.jobs.forEach(o => { const k = plateKey(o.car.plate); if (k) (visits[k] = visits[k] || []).push(o); });
+  [...S.jobs].sort((a, b) => (b.closedAt || b.createdAt) - (a.closedAt || a.createdAt)).forEach(j => {
     if (j.status !== 'closed' || !j.closedAt || (j.demo && !DEMO_MODE && !S.demo)) return;
-    const fu = j.fu || {}, svcOnly = j.services.every(k => SVC[k] && SVC[k].g === 'srv');
-    // check-up: every finished job except a pure service visit; stop asking after 30 days
+    const fu = j.fu || {}, key = plateKey(j.car.plate);
+    const back = key && (visits[key] || []).filter(o => o !== j && o.createdAt > j.closedAt).sort((a, b) => a.createdAt - b.createdAt)[0]; // the car came back after this job
+    // check-up: every job except service / check-up visits; done by itself when the car comes back
     const dueC = j.closedAt + FU_CHECK_D * DAY;
-    if (!svcOnly && now >= dueC && now < dueC + 30 * DAY) out.push({ kind: 'check', j, due: dueC, done: fu.check, snooze: fu.checkSnooze });
-    // service: only the car's most recent visit counts
-    const key = plateKey(j.car.plate) || j.id; if (lastSeen.has(key)) return; lastSeen.add(key);
-    const last = j.closedAt, dueS = new Date(last); dueS.setMonth(dueS.getMonth() + FU_SVC_M);
-    if (now >= dueS.getTime()) out.push({ kind: 'svc', j, due: dueS.getTime(), done: fu.svc, snooze: fu.svcSnooze });
+    if (!isVisitOnly(j) && dueC <= until && now < dueC + 30 * DAY) out.push({ kind: 'check', key: 'check', j, due: dueC, done: fu.check || (back && { at: back.createdAt, by: back.createdBy, auto: true }), snooze: fu.checkSnooze });
+    // service: only the car's latest visit counts, every 6 months
+    const ck = key || j.id; if (lastSeen.has(ck)) return; lastSeen.add(ck);
+    for (let n = 1; n <= FU_SVC_TIMES; n++) {
+      const due = addMonths(j.closedAt, FU_SVC_M * n); if (due > until) break; if (due < now - FU_BACK) continue;
+      out.push({ kind: 'svc', key: 'svc' + n, n, j, due, done: fu['svc' + n] || (n === 1 && fu.svc), snooze: fu['svc' + n + 'Snooze'] });
+    }
   });
   return out.sort((a, b) => a.due - b.due);
 }
-const fuDue = () => fuItems().filter(i => !i.done && !(i.snooze && i.snooze > Date.now()));
+const fuOpen = i => !i.done && !(i.snooze && i.snooze > Date.now());
+const fuDue = () => { const we = fuWeekEnd(); return fuItems().filter(i => fuOpen(i) && i.due <= we); }; // this week (incl. a few days late)
 function waText(i) {
-  const j = i.j, name = j.car.customer ? ' ' + j.car.customer : '', car = carTitle(j);
-  return i.kind === 'check' ? `مرحباً${name}، معك ${S.settings.shop || 'Insulator'}. نتمنى إن شغل سيارتك ${car} عاجبك 🌟 حياك تمرّ علينا للتشييك على السيارة، متى يناسبك؟`
-    : `مرحباً${name}، معك ${S.settings.shop || 'Insulator'}. صار لسيارتك ${car} ${FU_SVC_M} أشهر من آخر زيارة، وحان وقت السيرفيس 🚗✨ متى يناسبك نحجز لك موعد؟`;
+  const j = i.j, name = j.car.customer ? ' ' + j.car.customer : '', car = carTitle(j), shop = S.settings.shop || 'Insulator';
+  return i.kind === 'check' ? `مرحباً${name}، معك ${shop}. نتمنى إن شغل سيارتك ${car} عاجبك 🌟 حياك تمرّ علينا للتشييك على السيارة، متى يناسبك؟`
+    : `مرحباً${name}، معك ${shop}. صار لسيارتك ${car} ${FU_SVC_M * i.n} شهر من آخر زيارة، وحان وقت السيرفيس 🚗✨ متى يناسبك نحجز لك موعد؟`;
 }
 function fuCard(i) {
-  const j = i.j, v = visitsOf(j.car.plate).length || 1, ph = j.car.phone, sup = me().role === 'supervisor', late = Math.floor((Date.now() - i.due) / DAY);
+  const j = i.j, v = visitsOf(j.car.plate).length || 1, ph = j.car.phone, sup = me().role === 'supervisor', days = Math.round((startOfDay(i.due) - startOfDay(Date.now())) / DAY);
   const head = sup ? `<b>${esc(carTitle(j))}</b>` : `<a href="#/job/${j.id}"><b>${esc(carTitle(j))}</b></a>`;
-  const d = i.done && userById(i.done.by);
+  const when = days < 0 ? `<span class="chip r num">${t('fuLate', -days)}</span>` : days === 0 ? `<span class="chip y">${t('today')}</span>` : `<span class="chip num">${t('fuIn', days, fDate(i.due))}</span>`;
+  const d = i.done && userById(i.done.by), noInfo = !ph && !j.car.customer;
   return `<div class="fu-card ${i.kind} ${i.done ? 'done' : ''}">
-    <div class="fu-top"><span class="fu-k">${ic(i.kind === 'check' ? 'check' : 'clock')}${t(i.kind === 'check' ? 'fuCheck' : 'fuSvc')}</span>${!i.done && late > 0 ? `<span class="chip r num">${t('fuLate', late)}</span>` : ''}<span class="grow"></span>${j.car.plate ? `<span class="plate">${esc(j.car.plate)}</span>` : ''}</div>
+    <div class="fu-top"><span class="fu-k">${ic(i.kind === 'check' ? 'check' : 'clock')}${i.kind === 'check' ? t('fuCheck') : t('fuSvcN', FU_SVC_M * i.n)}</span>${i.done ? '' : when}<span class="grow"></span>${j.car.plate ? `<span class="plate">${esc(j.car.plate)}</span>` : ''}</div>
     <div class="fu-main">${head}<small class="muted">${j.car.customer ? esc(j.car.customer) + ' · ' : ''}${j.services.map(k => nm(SVC[k])).join('، ')}</small>
-      <small class="muted num">${t('fuFinished')}: ${fDate(j.closedAt)} · ${v > 1 ? t('visitsN', v) : t('firstVisit')}</small></div>
-    ${i.done ? `<div class="fu-done">${ic('check')}${t('fuDoneBy', d ? un(d) : '—', fDate(i.done.at))}</div>`
-      : `<div class="fu-act">${ph ? `<a class="btn g" href="tel:${esc(ph)}">${ic('phone')}${t('call')}</a><a class="btn" href="https://wa.me/${waNum(ph)}?text=${encodeURIComponent(waText(i))}" target="_blank" rel="noopener">${t('whatsapp')}</a>` : `<span class="muted" style="font-size:13px">${t('noPhone')}</span>`}
-        <span class="grow"></span><button class="btn ghost sm" data-act="fu-snooze" data-id="${j.id}" data-k="${i.kind}">${t('fuLater')}</button><button class="btn y sm" data-act="fu-done" data-id="${j.id}" data-k="${i.kind}">${ic('check')}${t('fuContacted')}</button></div>`}
+      <small class="muted num">${t('fuLastVisit')}: ${fDate(j.closedAt)} · ${v > 1 ? t('visitsN', v) : t('firstVisit')}</small>${noInfo ? `<small class="fu-noinfo">${t('fuNoInfo')}</small>` : ''}</div>
+    ${i.done ? `<div class="fu-done">${ic('check')}${i.done.auto ? t('fuCameBack', fDate(i.done.at)) : t('fuDoneBy', d ? un(d) : '—', fDate(i.done.at))}</div>`
+      : `<div class="fu-act">${ph ? `<a class="btn g" href="tel:${esc(ph)}">${ic('phone')}${t('call')}</a><a class="btn" href="https://wa.me/${waNum(ph)}?text=${encodeURIComponent(waText(i))}" target="_blank" rel="noopener">${t('whatsapp')}</a>` : noInfo ? '' : `<span class="muted" style="font-size:13px">${t('noPhone')}</span>`}
+        <span class="grow"></span><button class="btn ghost sm" data-act="fu-snooze" data-id="${j.id}" data-k="${i.key}">${t('fuLater')}</button><button class="btn y sm" data-act="fu-done" data-id="${j.id}" data-k="${i.key}">${ic('check')}${t('fuContacted')}</button></div>`}
   </div>`;
 }
 function viewFollow() {
-  const all = fuItems(), due = all.filter(i => !i.done && !(i.snooze && i.snooze > Date.now())), later = all.filter(i => !i.done && i.snooze && i.snooze > Date.now()), done = all.filter(i => i.done).sort((a, b) => b.done.at - a.done.at).slice(0, 15);
+  const all = fuItems(), we = fuWeekEnd(), now = Date.now();
+  const week = all.filter(i => fuOpen(i) && i.due <= we), soon = all.filter(i => fuOpen(i) && i.due > we);
+  const later = all.filter(i => !i.done && i.snooze && i.snooze > now), done = all.filter(i => i.done).sort((a, b) => b.done.at - a.done.at).slice(0, 15);
+  const today = week.filter(i => i.due <= startOfDay(now) + DAY).length;
+  const list = (h, icn, arr, empty) => `<div class="sec-h">${ic(icn)}${h}<span class="count num">${arr.length}</span></div>${arr.length ? `<div class="fu-list">${arr.map(fuCard).join('')}</div>` : empty ? `<div class="empty">${ic('check')}<div>${empty}</div></div>` : ''}`;
   const html = `<p class="muted" style="margin:0 0 14px">${t('fuIntro', FU_CHECK_D, FU_SVC_M)}</p>
-    <div class="sec-h">${ic('phone')}${t('fuNow')}<span class="count num">${due.length}</span></div>
-    ${due.length ? `<div class="fu-list">${due.map(fuCard).join('')}</div>` : `<div class="empty">${ic('check')}<div>${t('fuNone')}</div></div>`}
-    ${later.length ? `<div class="sec-h">${ic('clock')}${t('fuSnoozed')}<span class="count num">${later.length}</span></div><div class="fu-list">${later.map(fuCard).join('')}</div>` : ''}
-    ${done.length ? `<div class="sec-h">${ic('check')}${t('fuDoneList')}<span class="count num">${done.length}</span></div><div class="fu-list">${done.map(fuCard).join('')}</div>` : ''}`;
+    ${list(t('fuWeek'), 'phone', week, t('fuNone'))}
+    ${!today && soon.length ? `<p class="muted" style="margin:-4px 0 0;font-size:13px">${t('fuNoToday')}</p>` : ''}
+    ${list(t('fuSoon'), 'clock', soon, soon.length ? '' : t('fuNoSoon'))}
+    ${later.length ? list(t('fuSnoozed'), 'clock', later) : ''}${done.length ? list(t('fuDoneList'), 'check', done) : ''}`;
   return { title: t('follow'), sub: t('fuSub'), html };
 }
 function fuMark(id, kind, snooze) {
@@ -943,7 +962,7 @@ function partAll(jobId, part, op) {
 function editTaskSheet(id, isNew = false, jobId = null) {
   const x = isNew ? { id: null, jobId, service: jobById(jobId).services[0], part: '', workerIds: [], filmId: '', shade: '', start: null, end: null, rework: false } : S.tasks.find(t => t.id === id);
   if (!x) return;
-  const cur = isNew ? wids(x) : [...new Set(mates(x).flatMap(wids))], team = SVC_TEAM(x.service), workers = S.workers.filter(w => (w.active && teamOf(w) === team) || cur.includes(w.id));
+  const cur = isNew ? wids(x) : [...new Set(mates(x).flatMap(wids))], team = SVC_TEAM(x.service), workers = S.workers.filter(w => (w.active && inTeam(w, team)) || cur.includes(w.id));
   const films = S.films.filter(f => (f.active || f.id === x.filmId) && ['ppf', 'tint'].includes(f.type));
   openSheet(`<form data-form="task" data-id="${x.id || ''}" data-job="${x.jobId}">
     <div class="sheet-h"><h3>${isNew ? t('addTask') : t('editTask')}</h3><button type="button" class="btn icon ghost" data-act="close-sheet">${ic('x')}</button></div>
@@ -1091,7 +1110,7 @@ function analyze(from, to) {
   const parts = Object.values(pt).map(o => ({ ...o, avg: o.ds.reduce((a, b) => a + b, 0) / o.ds.length, n: o.ds.length })).sort((a, b) => b.n - a.n);
   return { from, to, tasks, jobs: jobsIn, kpi, workers: list, daily, svc, parts, base, wd , teams };
 }
-const GROUP_NAME = { ppf: { ar: 'حماية', en: 'PPF' }, wrap: { ar: 'تغيير لون', en: 'Wrap' }, tint: { ar: 'عازل', en: 'Tint' }, pol: { ar: 'بوليش', en: 'Polish' }, pol_ext: { ar: 'بوليش خارجي', en: 'Exterior polish' }, pol_int: { ar: 'بوليش داخلي', en: 'Interior polish' }, pol_both: { ar: 'بوليش داخلي وخارجي', en: 'Interior + exterior polish' }, ppfq: { ar: 'ربع حماية', en: 'Quarter PPF' }, jam: { ar: 'الجامة', en: 'Windshield' }, rep_ppf: { ar: 'تغيير قطع حماية', en: 'Replace PPF' }, rep_tint: { ar: 'تغيير قطع عازل', en: 'Replace tint' }, cer: { ar: 'سيراميك', en: 'Ceramic' } };
+const GROUP_NAME = { ppf: { ar: 'حماية', en: 'PPF' }, wrap: { ar: 'تغيير لون', en: 'Wrap' }, tint: { ar: 'عازل', en: 'Tint' }, pol: { ar: 'بوليش', en: 'Polish' }, pol_ext: { ar: 'بوليش خارجي', en: 'Exterior polish' }, pol_int: { ar: 'بوليش داخلي', en: 'Interior polish' }, pol_both: { ar: 'بوليش داخلي وخارجي', en: 'Interior + exterior polish' }, ppfq: { ar: 'ربع حماية', en: 'Quarter PPF' }, jam: { ar: 'تركيب الجامة', en: 'Windshield install' }, jamx: { ar: 'نزع الجامة', en: 'Windshield removal' }, rep_ppf: { ar: 'تغيير قطع حماية', en: 'Replace PPF' }, rep_tint: { ar: 'تغيير قطع عازل', en: 'Replace tint' }, cer: { ar: 'سيراميك', en: 'Ceramic' } };
 const partLabel = k => { const [g, p] = k.split(':'); return nm(PARTS[p]) + ' · ' + nm(GROUP_NAME[g]); };
 
 /* ---------------- dashboard ---------------- */
@@ -1438,8 +1457,8 @@ function taskFormSync(f) {
   $('#task-part', f).innerHTML = poolOf(svc, kind).map(p => `<option value="${p}">${esc(nm(PARTS[p]))}</option>`).join('');
   $('#tint-fields', f).style.display = needFilm(svc) ? '' : 'none';
   const team = SVC_TEAM(svc), on = new Set(f.workerIds.value.split(',').filter(Boolean)), grid = $('#task-picks', f);
-  if (grid && grid.dataset.team !== team) { grid.dataset.team = team; S.workers.filter(w => w.active && teamOf(w) !== team).forEach(w => on.delete(w.id)); f.workerIds.value = [...on].join(',');
-    grid.innerHTML = S.workers.filter(w => (w.active && teamOf(w) === team) || on.has(w.id)).map(w => `<button type="button" class="pick ${on.has(w.id) ? 'on' : ''}" data-act="pick-task-worker" data-id="${w.id}">${avatar(w)}<span>${esc(wn(w))}</span></button>`).join(''); }
+  if (grid && grid.dataset.team !== team) { grid.dataset.team = team; S.workers.filter(w => w.active && !inTeam(w, team)).forEach(w => on.delete(w.id)); f.workerIds.value = [...on].join(',');
+    grid.innerHTML = S.workers.filter(w => (w.active && inTeam(w, team)) || on.has(w.id)).map(w => `<button type="button" class="pick ${on.has(w.id) ? 'on' : ''}" data-act="pick-task-worker" data-id="${w.id}">${avatar(w)}<span>${esc(wn(w))}</span></button>`).join(''); }
 }
 const FORMS = {
   'cloud-link': async f => { const b = f.querySelector('button'); b.disabled = true; const ok = await cloud.link(f.pw.value); if (!ok) { b.disabled = false; f.pw.value = ''; toast(LANG === 'ar' ? 'كلمة السر غير صحيحة' : 'Wrong password'); } },
