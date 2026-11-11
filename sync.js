@@ -13,7 +13,10 @@ window.cloud = (() => {
   // stable JSON (Postgres jsonb reorders keys, so compare with sorted keys) + small hash to remember what the server has
   const canon = v => v === null || typeof v !== 'object' ? JSON.stringify(v) : Array.isArray(v) ? '[' + v.map(canon).join(',') + ']' : '{' + Object.keys(v).filter(k => v[k] !== undefined).sort().map(k => JSON.stringify(k) + ':' + canon(v[k])).join(',') + '}';
   const hash = s => { let h = 5381; for (let i = 0; i < s.length; i++) h = (h * 33 ^ s.charCodeAt(i)) >>> 0; return h.toString(36) + s.length.toString(36); };
-  const meta = s => ({ settings: s.settings, rosterV: s.rosterV, demo: !!s.demo, v: s.v || 1, mig: s.mig || {} });
+  const meta = s => ({ settings: s.settings, rosterV: s.rosterV, demo: !!s.demo, v: s.v || 1, mig: s.mig || {}, gone: s.gone || [] });
+  // deleted cars/tasks are remembered (gone) so another device holding an old copy can never bring them back
+  const unionGone = (a, b) => [...new Set([...(a || []), ...(b || [])])].slice(-4000);
+  const dropGone = s => { const g = new Set(s.gone || []); if (!g.size) return; s.tasks = s.tasks.filter(x => !g.has('task:' + x.id) && !g.has('job:' + x.jobId)); s.jobs = s.jobs.filter(j => !g.has('job:' + j.id)); };
   function records(s) { // key → {kind,id,data,pos}
     const m = new Map();
     for (const k in ARR) (s[ARR[k]] || []).forEach((r, i) => m.set(k + ':' + r.id, { kind: k, id: r.id, data: r, pos: i }));
@@ -39,7 +42,9 @@ window.cloud = (() => {
     if (pushing) { again = true; return; }
     pushing = true;
     try {
-      const { ups, dels } = pending();
+      let { ups, dels } = pending();
+      const nd = dels.filter(k => /^(task|job):/.test(k) && !(S.gone || []).includes(k));
+      if (nd.length) { S.gone = unionGone(S.gone, nd); saveLocal(); ({ ups, dels } = pending()); }
       if (ups.length || dels.length) setStatus('busy');
       for (let i = 0; i < ups.length; i += 400) {
         const chunk = ups.slice(i, i + 400);
@@ -68,9 +73,10 @@ window.cloud = (() => {
     const pos = {};
     rows.forEach(r => { if (r.kind === 'meta') Object.assign(s, r.data); else if (ARR[r.kind]) { s[ARR[r.kind]].push(r.data); pos[r.kind + ':' + r.id] = r.pos; } });
     for (const k in ARR) s[ARR[k]].sort((a, b) => (pos[k + ':' + a.id] || 0) - (pos[k + ':' + b.id] || 0));
-    synced = new Map(rows.map(r => [r.kind + ':' + r.id, hash(canon(r.data))]));
+    synced = new Map(rows.map(r => [r.kind + ':' + r.id, hash(canon(r.data))])); const srvGone = s.gone;
     ups.forEach(r => { if (r.kind === 'meta') Object.assign(s, r.data); else { const a = s[ARR[r.kind]], i = a.findIndex(x => x.id === r.id); if (i >= 0) a[i] = r.data; else a.push(r.data); } });
     dels.forEach(key => { const i = key.indexOf(':'), k = key.slice(0, i), id = key.slice(i + 1); if (ARR[k]) s[ARR[k]] = s[ARR[k]].filter(x => x.id !== id); });
+    s.gone = unionGone(unionGone(srvGone, s.gone), S.gone); dropGone(s);
     if (!s.users.length) s.users = S.users; // never lock everyone out
     S = s; everSynced = true; saveLocal(); saveSynced();
   }
@@ -97,7 +103,8 @@ window.cloud = (() => {
     } else {
       const h = hash(canon(row.data)); if (synced.get(key) === h) return; // our own echo
       synced.set(key, h);
-      if (row.kind === 'meta') Object.assign(S, row.data);
+      if (row.kind === 'meta') { const g = unionGone(S.gone, row.data.gone); Object.assign(S, row.data); S.gone = g; dropGone(S); }
+      else if (ARR[row.kind] && ((S.gone || []).includes(key) || (row.kind === 'task' && (S.gone || []).includes('job:' + row.data.jobId)))) return; // deleted — ignore old copies
       else if (ARR[row.kind]) { const a = S[ARR[row.kind]], i = a.findIndex(x => x.id === row.id); if (i >= 0) a[i] = row.data; else a.push(row.data); }
     }
     clearTimeout(liveT); liveT = setTimeout(() => { saveLocal(); saveSynced(); redraw(); }, 150); // a car with 15 parts arrives as 16 rows: draw once
