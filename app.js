@@ -88,15 +88,16 @@ const SERVICES = [
   { k: 'windshield_off', g: 'jamx', ar: 'نزع الجامة', en: 'Windshield removal', parts: ['windshield'] }, // any worker — PPF or polish team
   { k: 'checkup', g: 'chk', ar: 'تشييك', en: 'Check-up', parts: ['whole'] }, // the 3-day check after a new job
   { k: 'service', g: 'srv', ar: 'سيرفيس', en: 'Service visit', parts: ['whole'] }, // a car we worked on before: just pick the workers
+  { k: 'ppf_off', g: 'ppfx', ar: 'نزع الحماية', en: 'PPF removal', parts: BODY }, // any worker, like the other removals
   { k: 'replace', g: 'rep', ar: 'تغيير قطع', en: 'Panel replacement', parts: [] },
 ];
 const SVC = Object.fromEntries(SERVICES.map(s => [s.k, s]));
 // how the new-car page groups the services
 const SVC_CATS = [
   { k: 'ppf', ic: 'shield', ar: 'الحماية', en: 'PPF', svcs: ['full_ppf', 'half_ppf', 'quarter_ppf', 'color_change', 'rims_ppf'], hint: { ar: 'نوع حماية واحد — والرينجات تنضاف معه', en: 'one PPF type — rims can be added' } },
-  { k: 'tint', ic: 'sun', ar: 'العازل الحراري', en: 'Tint', svcs: ['tint', 'tint_off', 'windshield', 'windshield_off'] },
+  { k: 'tint', ic: 'sun', ar: 'العازل الحراري', en: 'Tint', svcs: ['tint', 'windshield'] },
   { k: 'pol', ic: 'spark', ar: 'البوليش', en: 'Polish', svcs: ['polish', 'ceramic', 'clean'] },
-  { k: 'rep', ic: 'swap', ar: 'تغيير القطع', en: 'Panel replacement', svcs: ['replace'] },
+  { k: 'rep', ic: 'swap', ar: 'تغيير ونزع القطع', en: 'Replace & removal', svcs: ['replace', 'ppf_off', 'tint_off', 'windshield_off'] },
   { k: 'srv', ic: 'clock', ar: 'سيرفيس', en: 'Service', svcs: ['service', 'checkup'], hint: { ar: 'لسيارة اشتغلنا عليها من قبل', en: 'for a car we worked on before' } },
 ];
 const FILM_TYPES = { ppf: { ar: 'حماية PPF', en: 'PPF film' }, tint: { ar: 'عازل حراري', en: 'Window film' }, wrap: { ar: 'تغيير لون', en: 'Color wrap' }, cer: { ar: 'سيراميك', en: 'Ceramic' } };
@@ -111,7 +112,7 @@ const kindLabel = k => t({ tint: 'replTint', ppf: 'replPpf', ext: 'polExt', int:
 const needShade = () => false; // owner: tint needs neither shade nor film
 const needFilm = svc => SVC[svc].g === 'jam'; // the windshield service only needs the film type
 const dKind = svc => (draft && draft.kind && draft.kind[svc]) || KIND_DEF[SVC[svc].g] || 'ppf';
-const SVC_TEAM = svc => ['jamx', 'tintx', 'srv'].includes(SVC[svc].g) ? 'all' : ['cer', 'pol', 'cln'].includes(SVC[svc].g) ? 'polish' : 'ppf';
+const SVC_TEAM = svc => ['jamx', 'tintx', 'ppfx', 'srv'].includes(SVC[svc].g) ? 'all' : ['cer', 'pol', 'cln'].includes(SVC[svc].g) ? 'polish' : 'ppf';
 const inTeam = (w, team) => team === 'all' || teamOf(w) === team;
 const PALETTE = ['#FBBF15', '#5FB4FF', '#2FD896', '#FF7A59', '#B98CFF', '#FF5D9E', '#6FE3D0', '#F2E863', '#9DB4FF', '#FFA94D'];
 // Brands ordered by how common they are on Qatar roads; models list Qatar trims. Anything else → "Other".
@@ -458,7 +459,7 @@ const DIFFICULTY = { rim_fl: .8, rim_fr: .8, rim_rl: .8, rim_rr: .8, fbumper: 3.
 const QUARTER_HALF = ['hood', 'fender_l', 'fender_r'];
 const isHalfPart = (svc, part) => svc === 'quarter_ppf' && QUARTER_HALF.includes(part);
 const pName = (part, svc) => nm(PARTS[part]) + (isHalfPart(svc, part) ? ' (' + t('halfPart') + ')' : '');
-const ptsOf = x => (DIFFICULTY[x.part] || 1) * (SVC[x.service].g === 'wrap' ? 1.5 : 1) * (isHalfPart(x.service, x.part) ? .5 : 1) * (SVC[x.service].g === 'pol' ? ({ int: .8, both: 1.6 }[x.kind] || 1) : 1) * (SVC[x.service].g === 'chk' ? .3 : 1) * (['cln', 'srv', 'tintx'].includes(SVC[x.service].g) ? .5 : 1); // cleaning = half a polish
+const ptsOf = x => (DIFFICULTY[x.part] || 1) * (SVC[x.service].g === 'wrap' ? 1.5 : 1) * (isHalfPart(x.service, x.part) ? .5 : 1) * (SVC[x.service].g === 'pol' ? ({ int: .8, both: 1.6 }[x.kind] || 1) : 1) * (SVC[x.service].g === 'chk' ? .3 : 1) * (['cln', 'srv', 'tintx', 'ppfx'].includes(SVC[x.service].g) ? .5 : 1); // cleaning = half a polish
 const fN = v => Number.isInteger(v) ? String(v) : v.toFixed(1);
 const un = u => u ? (LANG === 'en' && u.nameEn ? u.nameEn : u.name) : '';
 const wn = w => w ? (LANG === 'en' && w.nameEn ? w.nameEn : w.name) : '';
@@ -526,7 +527,7 @@ const IC = {
   pause: '<rect x="7" y="5" width="3.5" height="14" rx="1" fill="currentColor"/><rect x="13.5" y="5" width="3.5" height="14" rx="1" fill="currentColor"/>',
   info: '<circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/>', x: '<path d="M6 6l12 12M18 6L6 18"/>',
 };
-const SVC_IC = { full_ppf: 'shield', half_ppf: 'half', quarter_ppf: 'quarter', color_change: 'palette', tint: 'sun', ceramic: 'drop', polish: 'spark', clean: 'clean', service: 'clock', checkup: 'check', windshield: 'glass', windshield_off: 'glass', tint_off: 'sun', rims_ppf: 'wheel', replace: 'swap' };
+const SVC_IC = { full_ppf: 'shield', half_ppf: 'half', quarter_ppf: 'quarter', color_change: 'palette', tint: 'sun', ceramic: 'drop', polish: 'spark', clean: 'clean', service: 'clock', checkup: 'check', windshield: 'glass', windshield_off: 'glass', tint_off: 'sun', ppf_off: 'shield', rims_ppf: 'wheel', replace: 'swap' };
 const ic = (n, cls = '') => `<svg class="i ${cls}" viewBox="0 0 24 24">${IC[n] || ''}</svg>`;
 
 /* ---------------- car diagram (top view, front at top) ---------------- */
@@ -1256,7 +1257,7 @@ function analyze(from, to) {
   const parts = Object.values(pt).map(o => ({ ...o, avg: o.ds.reduce((a, b) => a + b, 0) / o.ds.length, n: o.ds.length })).sort((a, b) => b.n - a.n);
   return { from, to, tasks, jobs: jobsIn, kpi, workers: list, daily, svc, parts, base, wd , teams };
 }
-const GROUP_NAME = { ppf: { ar: 'حماية', en: 'PPF' }, wrap: { ar: 'تغيير لون', en: 'Wrap' }, tint: { ar: 'عازل', en: 'Tint' }, tintx: { ar: 'نزع العازل', en: 'Tint removal' }, rim: { ar: 'حماية الرينجات', en: 'Rim PPF' }, pol: { ar: 'بوليش', en: 'Polish' }, pol_ext: { ar: 'بوليش خارجي', en: 'Exterior polish' }, pol_int: { ar: 'بوليش داخلي', en: 'Interior polish' }, pol_both: { ar: 'بوليش داخلي وخارجي', en: 'Interior + exterior polish' }, ppfq: { ar: 'ربع حماية', en: 'Quarter PPF' }, jam: { ar: 'تركيب الجامة', en: 'Windshield install' }, jamx: { ar: 'نزع الجامة', en: 'Windshield removal' }, rep_ppf: { ar: 'تغيير قطع حماية', en: 'Replace PPF' }, rep_tint: { ar: 'تغيير قطع عازل', en: 'Replace tint' }, cer: { ar: 'سيراميك', en: 'Ceramic' } };
+const GROUP_NAME = { ppf: { ar: 'حماية', en: 'PPF' }, wrap: { ar: 'تغيير لون', en: 'Wrap' }, tint: { ar: 'عازل', en: 'Tint' }, tintx: { ar: 'نزع العازل', en: 'Tint removal' }, ppfx: { ar: 'نزع الحماية', en: 'PPF removal' }, rim: { ar: 'حماية الرينجات', en: 'Rim PPF' }, pol: { ar: 'بوليش', en: 'Polish' }, pol_ext: { ar: 'بوليش خارجي', en: 'Exterior polish' }, pol_int: { ar: 'بوليش داخلي', en: 'Interior polish' }, pol_both: { ar: 'بوليش داخلي وخارجي', en: 'Interior + exterior polish' }, ppfq: { ar: 'ربع حماية', en: 'Quarter PPF' }, jam: { ar: 'تركيب الجامة', en: 'Windshield install' }, jamx: { ar: 'نزع الجامة', en: 'Windshield removal' }, rep_ppf: { ar: 'تغيير قطع حماية', en: 'Replace PPF' }, rep_tint: { ar: 'تغيير قطع عازل', en: 'Replace tint' }, cer: { ar: 'سيراميك', en: 'Ceramic' } };
 const partLabel = k => { const [g, p] = k.split(':'); return nm(PARTS[p]) + ' · ' + nm(GROUP_NAME[g]); };
 
 /* ---------------- dashboard ---------------- */
