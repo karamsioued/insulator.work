@@ -555,3 +555,9 @@ button.kpi.tap{font:inherit;color:inherit;text-align:start;cursor:pointer;width:
 .day-row{display:flex;align-items:center;gap:8px;margin-top:8px;font-size:12.5px;color:var(--muted)}
 .day-row svg{width:15px;height:15px}
 .day-row .inp{width:auto;padding:6px 10px;font-size:13px;min-height:0;height:auto}
+/* v63: tappable service chips on the car page */
+button.chip.svc-chip{font:inherit;cursor:pointer;border:0;display:inline-flex;align-items:center;gap:5px}
+button.chip.svc-chip svg{width:12px;height:12px;opacity:.7}
+.job-split>*{min-width:0}
+@media (max-width:860px){.job-split{grid-template-columns:minmax(0,1fr)}}
+.task .nm b{overflow-wrap:anywhere}
