@@ -561,3 +561,16 @@ button.chip.svc-chip svg{width:12px;height:12px;opacity:.7}
 .job-split>*{min-width:0}
 @media (max-width:860px){.job-split{grid-template-columns:minmax(0,1fr)}}
 .task .nm b{overflow-wrap:anywhere}
+/* v65: appointments */
+.ap-head{display:flex;align-items:center;gap:12px;justify-content:space-between;flex-wrap:wrap;margin-bottom:6px}
+.ap-list{display:grid;gap:10px}
+.ap-card{display:flex;gap:14px;padding:14px;border-radius:var(--r-lg);border:1px solid var(--line);background:linear-gradient(180deg,rgba(20,40,88,.55),rgba(10,23,54,.5))}
+.ap-card.late{border-color:rgba(255,90,90,.45)}.ap-card.arrived,.ap-card.cancelled{opacity:.6}
+.ap-time{min-width:64px;text-align:center;display:flex;flex-direction:column;gap:2px}.ap-time b{font-size:20px;color:var(--yellow)}.ap-time small{font-size:11px;color:var(--muted)}
+.ap-main{flex:1;min-width:0;display:flex;flex-direction:column;gap:4px}
+.ap-top{display:flex;align-items:center;gap:8px;flex-wrap:wrap}.ap-top b{font-size:15.5px}
+.ap-note{color:var(--text);opacity:.85;font-size:12.5px}
+.ap-act{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-top:6px}
+.nav-badge.y{background:var(--yellow);color:#0a1430}
+@media(max-width:600px){.ap-card{flex-direction:column;gap:8px}.ap-time{flex-direction:row;align-items:baseline;gap:8px;text-align:start}.tabbar a{padding:6px 2px;font-size:10px}}
+.ap-head p{flex:1 1 220px;min-width:0}
