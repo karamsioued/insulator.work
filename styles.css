@@ -636,3 +636,4 @@ button.chip.svc-chip svg{width:12px;height:12px;opacity:.7}
 .st-tag.est{background:rgba(95,180,255,.16);color:#9fd2ff}
 @media(max-width:600px){.pr-tiers{grid-template-columns:1fr 1fr}}
 .pr-known{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:10px}
+.pr-agree{margin-top:12px}.pr-agree .inp{font-size:18px;font-weight:700}
